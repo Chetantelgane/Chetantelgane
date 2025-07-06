@@ -1,0 +1,122 @@
+Steps for rsyslog configuration
+
+get the collector server ready
+install AMA agent first on it.
+run the script : The script configures the rsyslog daemon to use the required protocol and restarts the daemon.
+sudo wget -O Forwarder_AMA_installer.py https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/DataConnectors/Syslog/Forwarder_AMA_installer.py&&sudo python Forwarder_AMA_installer.py
+After this the folder will get created -- /etc/rsyslog.conf
+======================================================================================================================================================
+To check the port configuration of rsyslog run below cmd.
+	grep -E 'imudp|imtcp' /ect/rsyslog.conf
+and the o/p should look like below.,
+
+module(load="imudp")
+input(type="imudp" port="514")
+module(load="imtcp")
+input(type="imtcp" port="514")
+======================================================================================================================================================
+After checking /etc/rsyslog.conf we also need to verify the presence of /etc/rsyslog.d/10-azuremonitoragent-omfwd.conf, run below cmd.,
+	cat /etc/rsyslog.d/10-azuremonitoragent-omfwd.conf
+And the O/P will looks like below.,
+
+"Azure Monitor Agent configuration: forward logs to azuremonitoragent"
+======================================================================================================================================================
+Troubleshooting steps in issues collecting logs in Syslog server use below Link
+
+https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-troubleshoot-linux-vm#issues-collecting-syslog
+https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-troubleshoot-linux-vm-rsyslog
+======================================================================================================================================================
+
+Let's verify the ports status.
+sudo ss -lnp | grep -E "28330|514
+
+you should get a similar output:
+	udp UNCONN 0 0 0.0.0.0:514 0.0.0.0:* users:(("rsyslogd",pid=12289,fd=5))
+	udp UNCONN 0 0 514 [::]:* users:(("rsyslogd",pid=12289,fd=6))
+	tcp LISTEN 0 10 127.0.0.1:28330 0.0.0.0:* users:(("mdsd",pid=1424,fd=1363))
+	tcp LISTEN 0 25 0.0.0.0:514 0.0.0.0:* users:(("rsyslogd",pid=12289,fd=7))
+	tcp LISTEN 0 25 514 [::]:* users:(("rsyslogd",pid=12289,fd=8))
+======================================================================================================================================================
+Check firewall rules
+
+The ports might be open but a firewall might be blocking all communications. Based on your environment and setup make sure the appropriate firewall rules are in place to allow the communication to occurs between:
+
+log source and rsyslog
+rsyslog and AMA
+AMA and the Azure Cloud
+
+======================================================================================================================================================
+
+Onboard AWS logs 
+
+https://learn.microsoft.com/en-us/azure/sentinel/connect-aws?tabs=s3
+
+======================================================================================================================================================
+
+Onboarding things to sentinel complete documents
+
+https://learn.microsoft.com/en-us/azure/sentinel/data-connectors-reference#windows-firewall
+
+======================================================================================================================================================
+
+CEF logs to sentinel
+
+https://learn.microsoft.com/en-us/previous-versions/azure/sentinel/connect-common-event-format
+
+======================================================================================================================================================
+
+Syslog logs to sentinel
+
+https://learn.microsoft.com/en-us/previous-versions/azure/sentinel/connect-syslog
+
+======================================================================================================================================================
+
+Imp Links 
+
+https://learn.microsoft.com/en-us/azure/sentinel/basic-logs-use-cases  -- Auxiliary Logs ingestion
+https://learn.microsoft.com/en-us/azure/defender-for-cloud/data-ingestion-benefit -- MDC Costing
+https://learn.microsoft.com/en-us/azure/sentinel/connect-cef-syslog-ama?tabs=portal -- CEF log ingestion 
+
+
+
+
+
+IAAS  --- MDC--- AMA
+PAAS ---  API
+SAAAS  --  API
+
+
+MDC = Security camera on each door.
+Sentinel = Security control room watching all cameras and correlating events.
+
+
+
+Rsyslog : https://learn.microsoft.com/en-us/azure/sentinel/forward-syslog-monitor-agent
+Syslog server configuration : https://learn.microsoft.com/en-us/training/modules/connect-syslog-data-sources-to-azure-sentinel/1-introduction
+				https://learn.microsoft.com/en-us/azure/sentinel/connect-custom-logs-ama?tabs=portal#configure-the-data-connector
+
+
+https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
+
+https://learn.microsoft.com/en-us/azure/azure-functions/functions-add-output-binding-storage-queue-cli?tabs=isolated-process%2Cbash%2Cbrowser&pivots=programming-language-csharp
+
+https://learn.microsoft.com/en-us/azure/azure-functions/configure-networking-how-to?tabs=portal
+
+
+
+
+Syslog_parsing : 
+Syslog
+| where ProcessName contains " "
+| extend URL = extract("(([A-Z]+ [a-z]{4,5}:\\/\\/)|[A-Z]+ )([^ :]*)",3,SyslogMessage), 
+         SourceIP = extract("([0-9]+ )(([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}))",2,SyslogMessage), 
+         Status = extract("(TCP_(([A-Z]+)(_[A-Z]+)*)|UDP_(([A-Z]+)(_[A-Z]+)*))",1,SyslogMessage), 
+         HTTP_Status_Code = extract("(TCP_(([A-Z]+)(_[A-Z]+)*)|UDP_(([A-Z]+)(_[A-Z]+)*))/([0-9]{3})",8,SyslogMessage),
+         User = extract("(CONNECT |GET )([^ ]* )([^ ]+)",3,SyslogMessage),
+         RemotePort = extract("(CONNECT |GET )([^ ]*)(:)([0-9]*)",4,SyslogMessage),
+         Domain = extract("(([A-Z]+ [a-z]{4,5}:\\/\\/)|[A-Z]+ )([^ :\\/]*)",3,SyslogMessage)
+| extend TLD = extract("\\.[a-z]*$",0,Domain)
+
+
+
+
