@@ -1,0 +1,39 @@
+ASimDnsActivityLogs
+| where TimeGenerated between (datetime_add('day', -1, startofday(now())) .. startofday(now()))
+| where _IsBillable == true
+| summarize BillableDataBytes = sum(_BilledSize) by DvcHostname,bin(TimeGenerated,1d)
+| sort by BillableDataBytes desc
+| extend BytesFormatted = format_bytes(BillableDataBytes)
+
+| summarize TotalBillableBytes = sum(BillableDataBytes)
+| extend TotalBillableGB = round(TotalBillableBytes / 1e9, 2)
+
+search * 
+| where _IsBillable == true 
+| summarize BillableDataBytes = sum(_BilledSize) by _ResourceId, $table, _IsBillable
+| sort by BillableDataBytes desc
+| extend BytesFormatted = format_bytes(BillableDataBytes)
+| summarize TotalBillableBytes = sum(BillableDataBytes)
+| extend TotalBillableGB = round(TotalBillableBytes / 1e9, 2)
+
+Usage 
+| where TimeGenerated between (datetime_add('day', -5, startofday(now())) .. startofday(now()))
+| where StartTime >= datetime_add('day', -5, startofday(now())) and EndTime < startofday(now())
+| where IsBillable == true
+| summarize TotalDataGB = sum(Quantity) / 1024. by DataType, bin(TimeGenerated,1d)
+
+Usage 
+| where TimeGenerated >= datetime(2025-03-16 00:00:00) and TimeGenerated < datetime(2025-03-17 00:00:00)
+//| where TimeGenerated between (datetime_add('day', -1, startofday(now())) .. startofday(now()))
+//| where StartTime >= datetime_add('day', -1, startofday(now())) and EndTime < startofday(now())
+| where IsBillable == true
+| summarize TotalDataGB = sum(Quantity) / 1024 by DataType
+
+
+SecurityEvent
+| where TimeGenerated > ago(90d)
+| summarize max_TimeGenerated = max(TimeGenerated) by Computer,EventID
+| where max_TimeGenerated < startofday(now())
+| project Computer,EventID, max_TimeGenerated;
+
+
