@@ -1,0 +1,369 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_NotesfromOneReach_name": {
+            "defaultValue": "NotesfromOneReach",
+            "type": "String"
+        },
+        "Incidents___variables__Incident_Name____externalid": {
+            "defaultValue": "/subscriptions/54982c2e-65c8-4d62-ba73-779acb313882/resourceGroups/rgaz-sec-soc-eurw/providers/Microsoft.OperationalInsights/workspaces/sentinel-eurw/providers/Microsoft.SecurityInsights/Incidents/@{variables('Incident Name')}",
+            "type": "String"
+        },
+        "connections_azuremonitorlogs_externalid": {
+            "defaultValue": "/subscriptions/54982c2e-65c8-4d62-ba73-779acb313882/resourceGroups/rgaz-sec-soc-eurw/providers/Microsoft.Web/connections/azuremonitorlogs",
+            "type": "String"
+        },
+        "connections_azuresentinel_externalid": {
+            "defaultValue": "/subscriptions/54982c2e-65c8-4d62-ba73-779acb313882/resourceGroups/rgaz-sec-soc-eurw/providers/Microsoft.Web/connections/azuresentinel",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_NotesfromOneReach_name')]",
+            "location": "westeurope",
+            "tags": {
+                "Owner": "Akshay",
+                "Business Owner": "IT Services - Information Security",
+                "Machine Type": "Sentinel",
+                "Service or Legal Entity": "M.C.T. FZE"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "When_a_HTTP_request_is_received": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "conversation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "body": {
+                                                    "type": "string"
+                                                },
+                                                "ticket_id": {
+                                                    "type": "integer"
+                                                },
+                                                "servicenow_ticket": {
+                                                    "type": "string"
+                                                },
+                                                "attachments": {
+                                                    "type": "array"
+                                                },
+                                                "private": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Parse_JSON": {
+                            "runAfter": {
+                                "Initialize_Sentinel_incident_Number": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "conversation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "body": {
+                                                    "type": "string"
+                                                },
+                                                "ticket_id": {
+                                                    "type": "integer"
+                                                },
+                                                "servicenow_ticket": {
+                                                    "type": "string"
+                                                },
+                                                "attachments": {
+                                                    "type": "array"
+                                                },
+                                                "private": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "Initialize_Incident": {
+                            "runAfter": {
+                                "Initialize_Incident_Name": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Incident",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_ITSMTicket": {
+                            "runAfter": {
+                                "Set_Sentinel_Incident_Number": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "ITSMTicket",
+                                        "type": "integer",
+                                        "value": "@body('Parse_JSON')?['id']"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Work_Notes": {
+                            "runAfter": {
+                                "Initialize_Incident": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Work Notes",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Priority": {
+                            "runAfter": {
+                                "Initialize_Work_Notes": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Priority",
+                                        "type": "integer"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Severity": {
+                            "runAfter": {
+                                "Initialize_Priority": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Severity",
+                                        "type": "integer"
+                                    }
+                                ]
+                            }
+                        },
+                        "Initialize_Ticket_Id": {
+                            "runAfter": {
+                                "Initialize_Severity": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Ticket Id",
+                                        "type": "integer"
+                                    }
+                                ]
+                            }
+                        },
+                        "Set_Work_Notes": {
+                            "runAfter": {
+                                "Initialize_Ticket_Id": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "SetVariable",
+                            "inputs": {
+                                "name": "Work Notes",
+                                "value": "@body('Parse_JSON')?['conversation']?['body']"
+                            }
+                        },
+                        "Run_query_and_list_results_1": {
+                            "runAfter": {
+                                "Set_Work_Notes": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuremonitorlogs']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "SecurityIncident\n| where TimeGenerated > ago(24h)\n| where IncidentNumber == \"@{variables('Sentinel incident Number')}\"\n| project IncidentName\n| distinct IncidentName",
+                                "path": "/queryData",
+                                "queries": {
+                                    "subscriptions": "54982c2e-65c8-4d62-ba73-779acb313882",
+                                    "resourcegroups": "rgaz-sec-soc-eurw",
+                                    "resourcetype": "Log Analytics Workspace",
+                                    "resourcename": "Sentinel-eurw",
+                                    "timerange": "Set in query"
+                                }
+                            }
+                        },
+                        "For_each_1": {
+                            "foreach": "@body('Run_query_and_list_results_1')?['value']",
+                            "actions": {
+                                "Add_comment_to_incident_(V3)_1": {
+                                    "runAfter": {
+                                        "Set_Incident_Name": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "body": {
+                                            "incidentArmId": "[parameters('Incidents___variables__Incident_Name____externalid')]",
+                                            "message": "<p class=\"editor-paragraph\">Work notes added  :<br>@{variables('Work Notes')}</p>"
+                                        },
+                                        "path": "/Incidents/Comment"
+                                    }
+                                },
+                                "Set_Incident_Name": {
+                                    "runAfter": {
+                                        "Set_Incident": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "Incident Name",
+                                        "value": "@split(variables('Incident'),'\"')[3]"
+                                    }
+                                },
+                                "Set_Incident": {
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "Incident",
+                                        "value": "@string(body('Run_query_and_list_results_1')?['value'])"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Run_query_and_list_results_1": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "Initialize_Sentinel_incident_Number": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Sentinel incident Number",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Set_Sentinel_Incident_Number": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "SetVariable",
+                            "inputs": {
+                                "name": "Sentinel incident Number",
+                                "value": "@body('Parse_JSON')?['conversation']?['servicenow_ticket']"
+                            }
+                        },
+                        "Initialize_Incident_Name": {
+                            "runAfter": {
+                                "Initialize_ITSMTicket": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "Incident Name",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azuremonitorlogs": {
+                                "id": "/subscriptions/54982c2e-65c8-4d62-ba73-779acb313882/providers/Microsoft.Web/locations/westeurope/managedApis/azuremonitorlogs",
+                                "connectionId": "[parameters('connections_azuremonitorlogs_externalid')]",
+                                "connectionName": "azuremonitorlogs"
+                            },
+                            "azuresentinel": {
+                                "id": "/subscriptions/54982c2e-65c8-4d62-ba73-779acb313882/providers/Microsoft.Web/locations/westeurope/managedApis/azuresentinel",
+                                "connectionId": "[parameters('connections_azuresentinel_externalid')]",
+                                "connectionName": "azuresentinel"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
