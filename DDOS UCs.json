@@ -1,0 +1,361 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/23432798-5c47-4e3e-984a-fda00dac2880')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/23432798-5c47-4e3e-984a-fda00dac2880')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI.IM-384 - IPS - Possible DDoS detected",
+                "description": "IPS - Possible DDoS detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n|where Message contains \"DDOS\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8ac03105-6242-486e-9ed5-1eb0a8126f25')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8ac03105-6242-486e-9ed5-1eb0a8126f25')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-187 - DDOS - DDoS Attack Detected",
+                "description": "DDOS - DDoS Attack Detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where TimeGenerated > ago(1h)\r\n| where DeviceAction == \"allow\" and CommunicationDirection == \"Inbound\"\r\n| summarize Count = count() by bin(TimeGenerated, 1m), DestinationIP\r\n| join kind=inner (\r\n    CommonSecurityLog\r\n    | where TimeGenerated > ago(1h)\r\n    | where DeviceAction == \"deny\" and CommunicationDirection == \"Inbound\"\r\n    | summarize DeniedCount = count() by bin(TimeGenerated, 1m), DestinationIP\r\n) on TimeGenerated, DestinationIP\r\n| extend TotalCount = Count + DeniedCount\r\n| where TotalCount > 1000\r\n| project TimeGenerated, DestinationIP, TotalCount\r\n| order by TotalCount desc",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1498",
+                    "T1464"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/00170def-ba65-4eb3-95f3-a5687c8110ed')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/00170def-ba65-4eb3-95f3-a5687c8110ed')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-189 - DDOS - DoS Events with High Magnitude Become Offenses",
+                "description": "DDOS - DoS Events with High Magnitude Become Offenses",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let EventCategory = dynamic([\"DOS.Brute force login\",\" DOS.Database DoS\",\" DOS.DNS Service DoS\",\" DOS.FTP DoS\",\" DOS.High Rate DoS\",\r\n \"DOS.High Rate ICMP DoS\",\" DOS.High Rate ICMP Scan\",\"DOS.High Rate Scan\",\"DOS.High Rate TCP DoS\",\"DOS.High Rate TCP Scan\",\"DOS.High Rate UDP DoS\",\r\n \"DOS.High Rate UDP Scan\",\" DOS.ICMP DoS\",\" DOS.Infrastructure DoS\",\" DOS.Low Rate DoS\",\" DOS.Low Rate ICMP DoS\",\" DOS.Low Rate ICMP Scan\",\"DOS.Low Rate Scan\",\" DOS.Low Rate TCP DoS\",\" DOS.Low Rate TCP Scan\",\" DOS.Low Rate UDP DoS\",\"DOS.Low Rate UDP Scan\",\" DOS.Mail Service DoS\",\r\n \"DOS.Medium Rate DoS\",\" DOS.Medium Rate ICMP DoS\",\" DOS.Medium Rate ICMP Scan\",\" DOS.Medium Rate Scan\",\" DOS.Medium Rate TCP DoS\",\r\n \"DOS.Medium Rate TCP Scan\",\" DOS.Medium Rate UDP DoS\",\" DOS.Medium Rate UDP Scan\",\" DOS.Misc DoS\",\" DOS.TCP DoS\",\" DOS.Telnet DoS\", \r\n\"DOS.UDP DoS\",\" DOS.Unix DOS\",\" DOS.Unknown DoS Attack\",\" DOS.VoIP DoS\",\" DOS.Web Service DoS\",\" DOS.Windows DoS\"]);\r\nCommonSecurityLog\r\n| where Message in (EventCategory)",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/aed96cc4-339c-4843-b3b1-9a4beb2143fd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/aed96cc4-339c-4843-b3b1-9a4beb2143fd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-194 - DDoS - Service DoS Attack Detected",
+                "description": "DDoS - Service DoS Attack Detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where not(ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16) or ipv4_is_match(\"192.0.0.0\", SourceIP, 16))\r\n| where Message in (\"DOS.Database DoS\", \"DOS.DNS Service DoS\", \"DOS.FTP DoS\", \"DOS.Mail Service DoS\", \"DOS.Telnet DoS\", \"DOS.Unix DOS\",\"DOS.Web Service DoS\", \"DOS.Windows DoS\")",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1464"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b9d43bc1-c669-47eb-8482-80c0fc14b81d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b9d43bc1-c669-47eb-8482-80c0fc14b81d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-333 - FW - Traffic peak - Possible DDoS detected",
+                "description": "FW - Traffic peak - Possible DDoS detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where DeviceProduct == \"Fortigate\"\r\n| where DeviceAction == \"allow\"\r\n| summarize Evntcount=count() by DestinationIP\r\n| where Evntcount >= 5000",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1498"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/79eb318a-768f-451a-bfe0-91839d83c810')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/79eb318a-768f-451a-bfe0-91839d83c810')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-363 - DDos- DDoS Events with High Magnitude Become Offenses",
+                "description": "DDos- DDoS Events with High Magnitude Become Offenses",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where * contains \"High Magnitude Events\" or * contains \"DDoS Attack Events\"",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1464"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/475')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/475')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-475 - Firewall - Possible Memcache Amplification DDOS",
+                "description": "This usecase detects Memcached amplification DDOS attack. A Memcached distributed denial-of-service (DDoS) attack is a type of cyber attack in which an attacker attempts to overload a targeted victim with internet traffic. The attacker spoofs requests to a vulnerable UDP Memcached* server, which then floods a targeted victim with internet traffic, potentially overwhelming the victim’s resources. While the target’s internet infrastructure is overloaded, new requests cannot be processed and regular traffic is unable to access the internet resource, resulting in denial-of-service.\n In a Memcached DDoS attack, an attacker sends a request via TCP or UDP to the targeted Memcached servers on port 11211 and spoofs the IP address of the victim where the sent request consists a few bytes and the response can be tens of thousands of times bigger, resulting in an amplification attack",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\n//| where not (ipv4_is_match(\"10.0.0.0\",SourceIP,8) or ipv4_is_match(\"172.16.0.0\",SourceIP,12) or ipv4_is_match(\"192.168.0.0\",SourceIP,16))\n//and  (ipv4_is_match(\"10.0.0.0\",DestinationIP,8) or ipv4_is_match(\"172.16.0.0\",DestinationIP,12) or ipv4_is_match(\"192.168.0.0\",DestinationIP,16))\n|where Protocol contains \"udp_ip\"\n|where DestinationPort==11211\n|summarize Evntcount=count() by SourceIP,bin(TimeGenerated,10m)\n|where Evntcount>=100",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1464"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

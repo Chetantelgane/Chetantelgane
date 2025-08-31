@@ -1,0 +1,71 @@
+let targetDate = datetime(2025-07-06);
+AzureDiagnostics
+| where TimeGenerated between (startofday(targetDate) .. endofday(targetDate))
+| where _IsBillable == true
+| summarize BillableDataBytes = sum(_BilledSize) by Computer, ResourceType, Resource, Level, bin(TimeGenerated, 1d)
+| where BillableDataBytes > 2147483648
+| sort by BillableDataBytes desc
+| extend BytesFormatted = format_bytes(BillableDataBytes)
+
+| summarize TotalBillableBytes = sum(BillableDataBytes)
+| extend TotalBillableGB = round(TotalBillableBytes / 1e9, 2)
+
+search * 
+| where _IsBillable == true 
+| summarize BillableDataBytes = sum(_BilledSize) by _ResourceId, $table, _IsBillable
+| sort by BillableDataBytes desc
+| extend BytesFormatted = format_bytes(BillableDataBytes)
+| summarize TotalBillableBytes = sum(BillableDataBytes)
+| extend TotalBillableGB = round(TotalBillableBytes / 1e9, 2)
+
+Usage 
+| where TimeGenerated between (datetime_add('day', -5, startofday(now())) .. startofday(now()))
+| where StartTime >= datetime_add('day', -5, startofday(now())) and EndTime < startofday(now())
+| where IsBillable == true
+| summarize TotalDataGB = sum(Quantity) / 1024. by DataType, bin(TimeGenerated,1d)
+
+Usage 
+| where TimeGenerated >= datetime(2025-03-16 00:00:00) and TimeGenerated < datetime(2025-03-17 00:00:00)
+//| where TimeGenerated between (datetime_add('day', -1, startofday(now())) .. startofday(now()))
+//| where StartTime >= datetime_add('day', -1, startofday(now())) and EndTime < startofday(now())
+| where IsBillable == true
+| summarize TotalDataGB = sum(Quantity) / 1024 by DataType
+
+
+SecurityEvent
+| where TimeGenerated > ago(90d)
+| summarize max_TimeGenerated = max(TimeGenerated) by Computer,EventID
+| where max_TimeGenerated < startofday(now())
+| project Computer,EventID, max_TimeGenerated;
+
+
+
+
+GCPAuditLogs
+| where TimeGenerated >=ago(1d)
+| where isnotempty(MethodName)
+| where MethodName !in ("tableservice.delete","tableservice.insert","tableservice.update","datasetservice.update")
+| where Severity !in ("INFO", "DEBUG")
+| where isnotempty( Severity)
+| where isnotempty(MethodName)
+
+
+"transformKql": "source | where isnotempty(MethodName) | where MethodName !in ('tableservice.delete','tableservice.insert','tableservice.update','datasetservice.update') | where Severity !in ('INFO', 'DEBUG') | where isnotempty( Severity) | where isnotempty(MethodName)"
+
+
+WinSCP  --- to get Linux logs in windows format.
+
+
+echo -n "<164>CEF:0|Mock-test|MOCK|common=event-format-test|end|TRAFFIC|1|rt=$common=event-formatted-receive_time" | nc -u -w0 localhost 514
+
+logger -p local4.warn -P 514 -n 127.0.0.1 --rfc3164 -t CEF "0|Mock-test|MOCK|common=event-format-test|end|TRAFFIC|1|rt=$common=event-formatted-receive_time"
+
+tcpdump -i any port 514 -A -vv | grep "MOCK"
+
+sudo wget -O Forwarder_AMA_installer.py https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/DataConnectors/Syslog/Forwarder_AMA_installer.py&&sudo python3 Forwarder_AMA_installer.py
+
+
+CMK or AWS Managed keys  -- which is secure
+
+encrypt dta in transit -- which keys we use Syncronous or asysncronous  
+

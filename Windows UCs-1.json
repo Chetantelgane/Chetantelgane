@@ -1,0 +1,3300 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bcc02919-0bcf-4a3d-9e4a-eb555f171209')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bcc02919-0bcf-4a3d-9e4a-eb555f171209')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-Custom - Windows - Deletion/ Enable/ Disable of Suspicious Scheduled Task",
+                "description": "Deletion/ Enable/ Disable of Suspicious Scheduled Task",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let knowntasks = dynamic ([\"Windows Defender Cleanup\",\r\n    \"RunAADCHTestConnectivityAsSystem\",\r\n    \"Windows Defender Scheduled Scan\",\r\n    \"Windows Defender Verification\",\r\n    \"Windows Defender Cache Maintenance\",\r\n    \"Windows Defender Scheduled Scan\",\r\n    \"Windows Defender Verification\",\r\n    \"Windows Defender Cache Maintenance\",\r\n    \"Windows Defender Cleanup\",\r\n    \"Microsoft Antimalware Scheduled Scan\",\r\n    \"AC Power Download\",\r\n    \"AC Power Install\",\r\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\r\n    \"MicrosoftEdgeUpdateTaskMachineUA\",\r\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\r\n    \"MicrosoftEdgeUpdateTaskMachineCore\",\r\n    \"MusUx_LogonUpdateResults\",\r\n    \"CreateExplorerShellUnelevatedTask\",\r\n    \"TimeBasedEvents\",\r\n    \"Dell SupportAssistAgent AutoUpdate\",\r\n    \"OneDrive Per-Machine Standalone Update Task\",\r\n    \"Office Automatic Updates 2.0\",\r\n    \"OfficeTelemetryAgentFallBack2016\",\r\n    \"OfficeTelemetryAgentLogOn2016\",\r\n    \"Office Feature Updates\",\r\n    \"SetupCleanupTask\",\r\n    \"OneDrive Standalone Update Task\",\r\n    \"Adobe Acrobat Update Task\",\r\n    \"AC Power Install\",\r\n    \"BackgroundDownload\",\r\n    \"Policy Install\",\r\n    \"MusUx_LogonReboot\",\r\n    \"EnterpriseMgmt\",\r\n    \"Universal Orchestrator Start\",\r\n    \"Schedule Retry Scan\",\r\n    \"Office ClickToRun Service Monitor\",\r\n    \"OfficeBackgroundTaskHandlerLogon\",\r\n    \"OfficeBackgroundTaskHandlerRegistration\",\r\n    \"Office Subscription Maintenance\",\r\n    \"Configuration Manager Health Evaluation\",\r\n    \"Configuration Manager Client Upgrade Task\",\r\n    \"RemoteFXvGPUDisableTask\",\r\n    \"RemoteFXWarningTask\",\r\n    \"Intel® Management and Security Status\",\r\n    \"GroupPolicy\",\r\n    \"User_Feed_Synchronization\",\r\n    \"Office Serviceability Manager\",\r\n    \"ScheduledDefrag\",\r\n    \"Reboot_Battery\",\r\n    \"Reboot_AC\",\r\n    \"Office Feature Updates Logon\",\r\n    \"ThemesSyncedImageDownload\", \"PrinterCleanupTask\", \"ExpediteCleanup\",\r\n    \"Office Feature Updates\",\r\n    \"Resume App Installation Actions\",\r\n    \"ThemesSyncedImageDownload\",\r\n    \"PrinterCleanupTask\",\r\n    \"ExpediteCleanup\",\r\n    \"Yoda_Prod_Backup\",\r\n    \"Sql StartUp\",\r\n    \"SqlStartUp\",\r\n    \"Office Performance Monitor\",\r\n    \"Queued Schedule created for queued alerts\",\r\n    \"MicrosoftEdgeUpdateTaskMachineCore1d88f6b6e0be3e1\",\r\n    \"AC Power Download\", \"Trend Micro Endpoint Basecamp\", \"PushLaunch\", \"PushRenewal\"]); //INC2858775 PushLaunch PushLaunch\r\nSecurityEvent\r\n| where EventID in (4699, 4670, 4671)\r\n| parse kind =relaxed EventData with * \"TaskName\" TaskName \"TaskContent\"*\r\n| extend Scheduledtask= extract(\"\\\\\\\\([\\\\w\\\\s]+)\\\\<\", 1, TaskName)\r\n| where Scheduledtask !in (knowntasks) and isnotempty(Scheduledtask) \r\n| summarize start_time=min(TimeGenerated), end_time=max(TimeGenerated) by Scheduledtask, Computer, Activity",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "DefenseEvasion",
+                    "PrivilegeEscalation",
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1053",
+                    "T1222",
+                    "T1078"
+                ],
+                "subTechniques": [
+                    "T1053.005"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a1a34fda-a944-4ab7-b128-900040779a43')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a1a34fda-a944-4ab7-b128-900040779a43')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1501 - Windows - Suspicious powershell execution",
+                "description": "Windows - Suspicious PowerShell execution",
+                "severity": "High",
+                "enabled": true,
+                "query": "// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.\r\nSecurityEvent\r\n| where EventID == 4688 and Account !contains \"$\"\r\n| where Account !in~ (\"ccpadmin\", \"gccadmin\",\"AD\\\\PowerAutomate\")\r\n| where Process contains \"powershell.exe\" or Process contains \"powershell_ise.exe\"\r\n| where ParentProcessName !contains \"VS Code\"\r\n| where CommandLine !contains \"Get-Process\"\r\n| where CommandLine in~ (\r\n\"-EncodedCommand\",\"Invoke-WebRequest\",\r\n\"IEX\",\r\n\"-ExecutionPolicy Bypass\",\r\n\"FromBase64String\",\r\n\"Invoke-Expression\",\r\n\"Net.WebClient\",\r\n\"DownloadFile\",\r\n\"Invoke-RestMethod\",\r\n\"Reflection.Assembly\",\r\n\"Add-Type\",\r\n\"VirtualAlloc\",\r\n\"WriteProcessMemory\",\r\n\"Set-ItemProperty\",\r\n\"New-ItemProperty\",\r\n\"Register-ScheduledTask\",\r\n\"Get-Credential\",\r\n\"Get-Content\",\r\n\"password\",\r\n\"Security.Cryptography\"\r\n)\r\n| project\r\n    TimeGenerated,\r\n    Account,\r\n    AccountType,\r\n    Computer,\r\n    EventID,\r\n    Activity,\r\n    NewProcessName,\r\n    CommandLine,\r\n    ParentProcessName,\r\n    Process,\r\n    SubjectUserName\r\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated)\r\n    by\r\n    Account,\r\n    AccountType,\r\n    Computer,\r\n    EventID,\r\n    Activity,\r\n    NewProcessName,\r\n    CommandLine,\r\n    ParentProcessName,\r\n    Process,\r\n    SubjectUserName\r\n\r\n\r\n",
+                "queryFrequency": "PT6H",
+                "queryPeriod": "PT6H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT6H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a7935627-b478-46a9-a4b7-f3b2eec5d6c9')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a7935627-b478-46a9-a4b7-f3b2eec5d6c9')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-874 - Windows - Failed Code Integrity Checks",
+                "description": "This rule identifies integrity of file hash.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID in (\"5038\", \"6281\")\r\n| extend FileName = tostring(split(EventData, \"\\\\\")[-1])\r\n| extend EventFile= extract(@\"(.*\\.\\w+)\", 1, FileName)\r\n| where EventFile !in~ (\"prefs_enclave_x64.dll\", \"dual_engine_adapter_x64.dll\")\r\n| project-away FileName\r\n| summarize EndTime = max(TimeGenerated), count() by Computer, EventID, Activity, EventData, EventFile",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5M",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "File",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "EventFile"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8348fb86-2f7f-474f-a96d-4a3d8e919316')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8348fb86-2f7f-474f-a96d-4a3d8e919316')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Windows-Account Enabled",
+                "description": "This rule identifies the events when an account is enabled in Windows.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == \"4722\"\r\n| where SubjectUserName != \"admrussell\"\r\n| where AccountType !contains \"machine\"\r\n| project\r\n    TimeGenerated,\r\n    Computer,\r\n    TargetUserName,\r\n    TargetSid,\r\n    SubjectUserName,\r\n    SubjectUserSid",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/62e9c2d7-abfe-4e2b-9a28-897111c275e0')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/62e9c2d7-abfe-4e2b-9a28-897111c275e0')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1118 - Windows - Powershell Download",
+                "description": "Powershell Download",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let timeframe = 12h; \nSecurityEvent \n| where TimeGenerated >= ago(timeframe)  \n| where EventID == 4688 \n| where Process in~ (\"powershell.exe\", \"powershell_ise.exe\") \n| where CommandLine has \"Net.WebClient\" \n    or CommandLine has \"DownloadFile\" \n    or CommandLine has \"Invoke-WebRequest\" and CommandLine !contains \"microsoft.com\"\n    or CommandLine has \"Invoke-Shellcode\" \n    or CommandLine contains \"http:\" \n| where Computer !contains \"DEV\"\n| project TimeGenerated, Computer, AccountName, ParentProcessName, CommandLine, Account\n| where Account !in (\"AD\\\\CAP_SRV_NESSUS_HL\", \"AD\\\\CAP_SRV_NES_HL_DC\")\n| where Account !contains \"$\"\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T1059"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "ProcessId",
+                                "columnName": "ParentProcessName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "CommandLine",
+                                "columnName": "CommandLine"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1157')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1157')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1157 - Windows - User added to a security enabled group",
+                "description": "Windows - User added to a security enabled group",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let watchlist = (_GetWatchlist('security_enabled_group_users') | project SearchKey);\nSecurityEvent\n| where EventID==\"4728\" or EventID == \"4732\"\n| where AccountType !contains \"Machine\"\n| where Account !contains \"AD\\\\admHarper\"\n| where SubjectUserName !in (watchlist) and isnotempty( SubjectUserName)\n| summarize by TimeGenerated,Account,SubjectUserName,Activity, TargetAccount, MemberName",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1136"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bc85dd25-1650-4510-9fac-d09d48cf4cff')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bc85dd25-1650-4510-9fac-d09d48cf4cff')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "User account created or deleted in Windows",
+                "description": "This use case identifies user accounts created and deleted in windows within the specified timerange.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where AccountType == \"User\" \r\n| where EventID in (4726, 4720)\r\n//4726 - A user account was deleted\r\n//4720 -A user account was created\r\n| where Account !in~ (\"AD\\\\capswainr\" ,\"AD\\\\admrussell\" , \"AD\\\\HT001840\")\r\n| project\r\n    TimeGenerated,\r\n    Account,\r\n    Computer,\r\n    EventData,\r\n    EventID,\r\n    Activity,\r\n    AffectedUser=TargetUserName,\r\n    AffectedUserSID=TargetSid,\r\n    Initiator=SubjectAccount,\r\n    GroupName=TargetAccount\r\n| sort by TimeGenerated desc",
+                "queryFrequency": "PT6H",
+                "queryPeriod": "PT6H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT6H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/505')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/505')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-505 - Windows - Windows Event Logging Service Shut down",
+                "description": "Windows - Windows Event Logging Service Shut down",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 1100\n//| search \"The event logging service has shut down\"\n|where IpAddress != \"10.143.8.28\"\n| where dayofweek(TimeGenerated) != time(6.00:00:00) // Saturday\n| where dayofweek(TimeGenerated) != time(0.00:00:00) // Sunday",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3d9851ca-904e-4d7f-b8cd-8a1b336e1e88')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3d9851ca-904e-4d7f-b8cd-8a1b336e1e88')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1851 - Windows - Account Created-Local Account",
+                "description": "Windows-Account Created-Local Account",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 4720\r\n| where SubjectDomainName !contains \"heartland\"\r\n| where Account !contains \"admrussell\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation",
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/750')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/750')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-750 - Windows - Account Added to Privileged Group and Removed in 1 Day",
+                "description": "Windows - Account Added to Privileged Group and Removed in 1 Day",
+                "severity": "High",
+                "enabled": true,
+                "query": "let time_ago = 2d; \nlet time_delta = 1d; \nSecurityEvent\n| where TimeGenerated > ago(time_ago) \n| where EventID in(4728, 4732)\n| project\n    TimeAdded=TimeGenerated,\n    GroupName=TargetUserName,\n    MemberName,\n    SubjectUserName,\n    IpAddress,\n    Computer\n| join ( \n    SecurityEvent\n    | where TimeGenerated > ago(time_ago) \n    | where EventID in(4729, 4733)\n    | project\n        TimeRemoved=TimeGenerated,\n        GroupName=TargetUserName,\n        MemberName,\n        SubjectUserName,\n        IpAddress,\n        Computer\n    )\n    on MemberName, GroupName\n| where TimeRemoved < (TimeAdded + time_delta) \n| project TimeAdded, TimeRemoved, MemberName, SubjectUserName, GroupName, IpAddress, Computer",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P2D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8e50888a-f3bd-441c-a13b-3161b0f6648o')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8e50888a-f3bd-441c-a13b-3161b0f6648o')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-904 - Windows - Multiple Login Failures from the Same Source",
+                "description": " Windows - Multiple Login Failures from the Same Source",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID in (4625, 4776)\n| where AccountType != \"Machine\"\n| where Status != \"0x0\"\n| summarize dcount(TargetUserName), UserName_list=make_set(TargetUserName), make_set(Status),evtcount=count()  by Computer, bin(TimeGenerated, 5m)\n| where evtcount >= 15 and dcount_TargetUserName > 2",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT6H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Host"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e5e9af4f-a591-4213-a940-fd93f7bdda6e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e5e9af4f-a591-4213-a940-fd93f7bdda6e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Excessive Windows logon failures",
+                "description": "User has over 50 Windows logon failures today and at least 33% of the count of logon failures over the previous 7 days.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let starttime = 8d;\nlet endtime = 1d;\nlet threshold = 0.333;\nlet countlimit = 50;\nSecurityEvent\n| where TimeGenerated >= ago(endtime)\n| where EventID == 4625 and AccountType =~ \"User\"\n| where IpAddress !in (\"127.0.0.1\", \"::1\",\"-\")\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), CountToday = count() by EventID, Account, LogonTypeName, SubStatus, AccountType, Computer, WorkstationName, IpAddress, Process\n| join kind=leftouter (\n    SecurityEvent \n    | where TimeGenerated between (ago(starttime) .. ago(endtime))\n    | where EventID == 4625 and AccountType =~ \"User\"\n    | where IpAddress !in (\"127.0.0.1\", \"::1\",\"-\")\n    | summarize CountPrev7day = count() by EventID, Account, LogonTypeName, SubStatus, AccountType, Computer, WorkstationName, IpAddress\n) on EventID, Account, LogonTypeName, SubStatus, AccountType, Computer, WorkstationName, IpAddress\n| where CountToday >= coalesce(CountPrev7day,0)*threshold and CountToday >= countlimit\n//SubStatus Codes are detailed here - https://docs.microsoft.com/windows/security/threat-protection/auditing/event-4625\n| extend Reason = case(\nSubStatus =~ '0xC000005E', 'There are currently no logon servers available to service the logon request.',\nSubStatus =~ '0xC0000064', 'User logon with misspelled or bad user account',\nSubStatus =~ '0xC000006A', 'User logon with misspelled or bad password',    \nSubStatus =~ '0xC000006D', 'Bad user name or password',\nSubStatus =~ '0xC000006E', 'Unknown user name or bad password',\nSubStatus =~ '0xC000006F', 'User logon outside authorized hours',\nSubStatus =~ '0xC0000070', 'User logon from unauthorized workstation',\nSubStatus =~ '0xC0000071', 'User logon with expired password',\nSubStatus =~ '0xC0000072', 'User logon to account disabled by administrator',\nSubStatus =~ '0xC00000DC', 'Indicates the Sam Server was in the wrong state to perform the desired operation',  \nSubStatus =~ '0xC0000133', 'Clocks between DC and other computer too far out of sync',\nSubStatus =~ '0xC000015B', 'The user has not been granted the requested logon type (aka logon right) at this machine',\nSubStatus =~ '0xC000018C', 'The logon request failed because the trust relationship between the primary domain and the trusted domain failed',\nSubStatus =~ '0xC0000192', 'An attempt was made to logon, but the Netlogon service was not started',\nSubStatus =~ '0xC0000193', 'User logon with expired account',\nSubStatus =~ '0xC0000224', 'User is required to change password at next logon',\nSubStatus =~ '0xC0000225', 'Evidently a bug in Windows and not a risk',\nSubStatus =~ '0xC0000234', 'User logon with account locked',\nSubStatus =~ '0xC00002EE', 'Failure Reason: An Error occurred during Logon',\nSubStatus =~ '0xC0000413', 'Logon Failure: The machine you are logging onto is protected by an authentication firewall. The specified account is not allowed to authenticate to the machine',\nstrcat('Unknown reason substatus: ', SubStatus))\n| extend WorkstationName = iff(WorkstationName == \"-\" or isempty(WorkstationName), Computer , WorkstationName) \n| project StartTime, EndTime, EventID, Account, LogonTypeName, SubStatus, Reason, AccountType, Computer, WorkstationName, IpAddress, CountToday, CountPrev7day, Avg7Day = round(CountPrev7day*1.00/7,2), Process\n| summarize StartTime = min(StartTime), EndTime = max(EndTime), Computer = make_set(Computer,128), IpAddressList = make_set(IpAddress,128), sum(CountToday), sum(CountPrev7day), avg(Avg7Day) \nby EventID, Account, LogonTypeName, SubStatus, Reason, AccountType, WorkstationName, Process\n| order by sum_CountToday desc nulls last \n| extend timestamp = StartTime, AccountCustomEntity = Account, HostCustomEntity = WorkstationName",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P8D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "2391ce61-8c8d-41ac-9723-d945b2e90720",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "HostCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "CommandLine",
+                                "columnName": "Process"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "2.0.0"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4ac6eb24-3336-4b83-9364-b64e1f7c06d6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4ac6eb24-3336-4b83-9364-b64e1f7c06d6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-773 - Windows - Creation of Suspicious Scheduled Task",
+                "description": "Creation of Suspicious Scheduled Task",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let knowntasks = dynamic ([\"Windows Defender Cleanup\",\n    \"RunAADCHTestConnectivityAsSystem\",\n    \"Windows Defender Scheduled Scan\",\n    \"Windows Defender Verification\",\n    \"Windows Defender Cache Maintenance\",\n    \"Windows Defender Scheduled Scan\",\n    \"Windows Defender Verification\",\n    \"Windows Defender Cache Maintenance\",\n    \"Windows Defender Cleanup\",\n    \"Microsoft Antimalware Scheduled Scan\",\n    \"AC Power Download\",\n    \"AC Power Install\",\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\n    \"MicrosoftEdgeUpdateTaskMachineUA\",\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\n    \"MicrosoftEdgeUpdateTaskMachineCore\",\n    \"MusUx_LogonUpdateResults\",\n    \"CreateExplorerShellUnelevatedTask\",\n    \"TimeBasedEvents\",\n    \"Dell SupportAssistAgent AutoUpdate\",\n    \"OneDrive Per-Machine Standalone Update Task\",\n    \"Office Automatic Updates 2.0\",\n    \"OfficeTelemetryAgentFallBack2016\",\n    \"OfficeTelemetryAgentLogOn2016\",\n    \"Office Feature Updates\",\n    \"SetupCleanupTask\",\n    \"OneDrive Standalone Update Task\",\n    \"Adobe Acrobat Update Task\",\n    \"AC Power Install\",\n    \"BackgroundDownload\",\n    \"Policy Install\",\n    \"MusUx_LogonReboot\",\n    \"EnterpriseMgmt\",\n    \"Universal Orchestrator Start\",\n    \"Schedule Retry Scan\",\n    \"Office ClickToRun Service Monitor\",\n    \"OfficeBackgroundTaskHandlerLogon\",\n    \"OfficeBackgroundTaskHandlerRegistration\",\n    \"Office Subscription Maintenance\",\n    \"Configuration Manager Health Evaluation\",\n    \"Configuration Manager Client Upgrade Task\",\n    \"RemoteFXvGPUDisableTask\",\n    \"RemoteFXWarningTask\",\n    \"Intel® Management and Security Status\",\n    \"GroupPolicy\",\n    \"User_Feed_Synchronization\",\n    \"Office Serviceability Manager\",\n    \"ScheduledDefrag\",\n    \"Reboot_Battery\",\n    \"Reboot_AC\",\n    \"Office Feature Updates Logon\",\n    \"ThemesSyncedImageDownload\", \"PrinterCleanupTask\", \"ExpediteCleanup\",\n    \"Office Feature Updates\",\n    \"Resume App Installation Actions\",\n    \"ThemesSyncedImageDownload\",\n    \"PrinterCleanupTask\",\n    \"ExpediteCleanup\",\n    \"Yoda_Prod_Backup\",\n    \"Sql StartUp\",\n    \"SqlStartUp\",\n    \"Office Performance Monitor\",\n    \"Queued Schedule created for queued alerts\",\n    \"MicrosoftEdgeUpdateTaskMachineCore1d88f6b6e0be3e1\",\n    \"AC Power Download\", \"Trend Micro Endpoint Basecamp\", \"PushLaunch\", \"PushRenewal\"]); //INC2858775 PushLaunch PushLaunch\nSecurityEvent\n| where EventID == 4698\n| parse kind =relaxed EventData with * \"TaskName\" TaskName \"TaskContent\"*\n| extend Scheduledtask= extract(\"\\\\\\\\([\\\\w\\\\s]+)\\\\<\", 1, TaskName)\n| where Scheduledtask !in (knowntasks) and isnotempty(Scheduledtask) \n| summarize start_time=min(TimeGenerated), end_time=max(TimeGenerated) by Scheduledtask, Computer\n\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T1053"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/db23b26e-e87e-45bf-85a1-b201d4f0ac6e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/db23b26e-e87e-45bf-85a1-b201d4f0ac6e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Windows-Account Created",
+                "description": "This rule identifies the events when an account is created in Windows",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == \"4720\"\r\n| where SubjectUserName <> \"admrussell\"\r\n| project TimeGenerated,Computer,TargetUserName, TargetSid,SubjectUserName,SubjectUserSid",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/FVOVFO9S6O')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/FVOVFO9S6O')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-1502 - Windows - Privilege escalation detection",
+                "description": "Windows - Privilege escalation detection",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n|where EventID in (4673, 4674)\n",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/863')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/863')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-863 - Windows - Event Auditing disabled",
+                "description": "Discovers disabling event logging. Attackers oftentimes disable event logging in order to hide their actions, therefore, this may indicate that the system has been compromised",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n//| where TimeGenerated >=ago(1h)\n| where EventID ==1100\n| summarize dcount(EventID) by Computer, Activity, TimeGenerated\n|where dcount_EventID >0",
+                "queryFrequency": "PT12H",
+                "queryPeriod": "PT12H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1564"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f6972e83-0495-4728-a72b-e70590694ea8')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f6972e83-0495-4728-a72b-e70590694ea8')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1558 - Windows - Suspicious user name nomenclature",
+                "description": "Detect when the user name doesn't match the nomenclature of the company. Can be a proof of the usage of a crafted ticket.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID in(4624, 4768, 4769)\n| where SubjectAccount !contains \"heartland\"\n    and SubjectAccount !contains \"$\"\n    and Computer !contains \"dev\"\n    and Computer !contains \"uat\"\n| where EventID in(4624, 4768, 4769)\n| where SubjectAccount !contains \"heartland\" and SubjectAccount != @\"-\\-\" and isnotempty(SubjectAccount)\n    and SubjectAccount !contains \"$\"\n    and Computer !contains \"dev\"\n    and Computer !contains \"uat\"\n| where AccountType !contains \"machine\"\n| where Account != \"AD\\\\PowerAutomate\" and Process contains \"UIFlowService.exe\" //INC2856634 \n| summarize start_time=min(TimeGenerated), end_time=max(TimeGenerated), count()\n    by\n    Account,\n    Computer,\n    EventID,\n    LogonTypeName,\n    ProcessName,\n    SubjectAccount,\n    SubjectUserName,\n    TargetAccount,\n    TargetUserName,\n    TargetDomainName,\n    WorkstationName\n| project-reorder start_time, end_time\n//| where TargetDomainName !contains \"NT Service\"\n",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/990')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/990')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX.PE.PR-990 - Windows - Suspicious scheduled task created",
+                "description": "Windows - Suspicious scheduled task created",
+                "severity": "High",
+                "enabled": true,
+                "query": "let knowntasks = dynamic ([\"Windows Defender Cleanup\",\n    \"Windows Defender Scheduled Scan\",\n    \"Windows Defender Verification\",\n    \"Windows Defender Cache Maintenance\",\n    \"Windows Defender Scheduled Scan\",\n    \"Windows Defender Verification\",\n    \"Windows Defender Cache Maintenance\",\n    \"Windows Defender Cleanup\",\n    \"Microsoft Antimalware Scheduled Scan\",\n    \"AC Power Download\",\n    \"AC Power Install\",\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\n    \"MicrosoftEdgeUpdateTaskMachineUA\",\n    \"MicrosoftEdgeUpdateBrowserReplacementTask\",\n    \"MicrosoftEdgeUpdateTaskMachineCore\",\n    \"MusUx_LogonUpdateResults\",\n    \"CreateExplorerShellUnelevatedTask\",\n    \"TimeBasedEvents\",\n    \"Dell SupportAssistAgent AutoUpdate\",\n    \"OneDrive Per-Machine Standalone Update Task\",\n    \"Office Automatic Updates 2.0\",\n    \"OfficeTelemetryAgentFallBack2016\",\n    \"OfficeTelemetryAgentLogOn2016\",\n    \"Office Feature Updates\",\n    \"SetupCleanupTask\",\n    \"OneDrive Standalone Update Task\",\n    \"Adobe Acrobat Update Task\",\n    \"AC Power Install\",\n    \"BackgroundDownload\",\n    \"Policy Install\",\n    \"MusUx_LogonReboot\",\n    \"EnterpriseMgmt\",\n    \"Universal Orchestrator Start\",\n    \"Schedule Retry Scan\",\n    \"Office ClickToRun Service Monitor\",\n    \"OfficeBackgroundTaskHandlerLogon\",\n    \"OfficeBackgroundTaskHandlerRegistration\",\n    \"Office Subscription Maintenance\",\n    \"Configuration Manager Health Evaluation\",\n    \"Configuration Manager Client Upgrade Task\",\n    \"RemoteFXvGPUDisableTask\",\n    \"RemoteFXWarningTask\",\n    \"Intel® Management and Security Status\",\n    \"GroupPolicy\",\n    \"User_Feed_Synchronization\",\n    \"Office Serviceability Manager\",\n    \"ScheduledDefrag\",\n    \"Reboot_Battery\",\n    \"Reboot_AC\",\n    \"Office Feature Updates Logon\",\n    \"ThemesSyncedImageDownload\", \"PrinterCleanupTask\", \"ExpediteCleanup\",\n    \"Office Feature Updates\",\n    \"Resume App Installation Actions\",\n    \"ThemesSyncedImageDownload\",\n    \"PrinterCleanupTask\",\n    \"ExpediteCleanup\",\n    \"Yoda_Prod_Backup\",\n    \"Sql StartUp\",\n    \"SqlStartUp\",\n    \"Office Performance Monitor\",\n    \"Queued Schedule created for queued alerts\",\n    \"MicrosoftEdgeUpdateTaskMachineCore1d88f6b6e0be3e1\", \"SCOM 2007 Agent Resume Task\",\n    \"AC Power Download\", \"Trend Micro Endpoint Basecamp\", \"PushLaunch\", \"PushRenewal\"]); //INC2858775 PushLaunch PushLaunch\nSecurityEvent\n//| where TimeGenerated >= ago(1h)\n| where EventID == 4698 or EventID == 602\n| parse kind =relaxed EventData with * \"TaskName\" TaskName \"TaskContent\"*\n| extend User = extract(@\"<Data Name=\"\"SubjectUserName\"\">([^<]+)</Data>\", 1, EventData)\n| extend Scheduledtask= extract(\"\\\\\\\\([\\\\w\\\\s]+)\\\\<\", 1, TaskName)\n| where Scheduledtask !in (knowntasks) and isnotempty(Scheduledtask) \n| where User !endswith \"$\"\n\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T1053"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "User"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/762')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/762')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-762 - Windows - Audit Policy Changed, Cleared or Terminated",
+                "description": "Windows - Audit Policy Changed, Cleared or Terminated",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID in (4715, 4719, 4907, 4912)\n| where Account !endswith \"$\"",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T0872"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c0be8ec1-9857-4865-b901-22bc4bd31be1')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c0be8ec1-9857-4865-b901-22bc4bd31be1')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-903 - Windows - Multiple Login Failures for Single Username with logon type 2 - HL",
+                "description": "Windows - Multiple Login Failures for Single Username with logon type 2 - HL",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID  == \"4625\"\r\n| where LogonType == 2\r\n| where AccountType == \"User\"\r\n| summarize failurecount=count() by TargetUserName, IpAddress, Computer, bin(TimeGenerated, 15m)\r\n| where failurecount >= 10",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/903')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/903')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-903 - Windows - Multiple Login Failures for Single Username",
+                "description": "Windows - Multiple Login Failures for Single Username",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4625\n| where AccountType == \"User\"\n| where Account !endswith \"$\" and Account != \"-\"\n| where IpAddress != \"::1\" and IpAddress != \"127.0.0.1\"\n| where IpAddress != '10.127.9.24' or TargetUserName != \"SA_LanSw_Scan@heartlandcocacola.com\"\n| summarize make_set(TimeGenerated), evtcount=count() by TargetUserName, IpAddress, Computer, bin(TimeGenerated, 15m)\n| where evtcount >= 20",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/954')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/954')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-LM-954 - Windows - RDP from same source to multiple destination",
+                "description": "Windows - RDP from same source to multiple destination",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4624 or EventID == 4625\n| where LogonType == 10\n| where isnotempty(IpAddress) and IpAddress != \"::1\"\n//| where IpPort == 3389\n//| where (ipv4_is_match(\"10.0.0.0\", IpAddress, 8) or ipv4_is_match(\"172.16.0.0\",IpAddress, 12) or ipv4_is_match(\"192.168.0.0\", IpAddress, 16) or ipv4_is_match(\"192.0.0.0\", IpAddress, 16))\n//|summarize make_set()\n| summarize\n    starttime=min(TimeGenerated),\n    enndtime=max(TimeGenerated),\n    uniquedestinationcount= dcount(Computer),computer = make_set(Computer),account = make_set(UserPrincipalName),\n    Destination=make_set(Computer),\n    RDPcount= count()\n    by IpAddress, bin(TimeGenerated, 10m)\n| where uniquedestinationcount > 1\n| where RDPcount >= 5",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "LateralMovement"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "account"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/57742683-dc32-4a26-8441-a9b683498ce2')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/57742683-dc32-4a26-8441-a9b683498ce2')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-899 - Windows - Microsoft Malware Protection Engine Crash",
+                "description": "Detects the creation of a user with the \"$\" character. This can be used by attackers to hide a user or trick detection systems that lack the parsing mechanisms.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Event\r\n| where (EventID == 1000 and Source == \"Application Error\") or (EventID == 1001 and Source == \"Windows Error Reporting\")\r\n| where RenderedDescription has_any (\"MsMpEng.exe\", \"mpengine.dll\")",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1211"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/905')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/905')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-905 - Windows - Multiple Login Failures to the Same Destination",
+                "description": "Windows - Multiple Login Failures to the Same Destination",
+                "severity": "High",
+                "enabled": true,
+                "query": " SecurityEvent\n| where EventID == 4625\n//| where LogonType !in (3)\n//| where IpAddress !in~ (\"::1\", \"-\")\n| where Account !endswith \"$\"\n| summarize\n    StartTime = min(TimeGenerated),\n    EndTime = max(TimeGenerated),\n    IPCount=dcount(IpAddress),\n    Computer=make_set(Computer),\n    count()\n    by Account, TargetUserName, bin(TimeGenerated, 15m),IpAddress\n| where count_ >= 250\n//| project-reorder StartTime, EndTime\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/20ffa5cc-80a0-45c0-84fe-1cfbc22a8796')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/20ffa5cc-80a0-45c0-84fe-1cfbc22a8796')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1527 - Windows - File permission change detected",
+                "description": "File permission change detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 4670\r\n| where ObjectType contains \"File\"\r\n| where Account !contains \"$\" or AccountType !contains \"Machine\"\r\n| where Computer !contains \"DEV\" // As these are DEV  Environment",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1222"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "File",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "FileHash"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3677da33-b148-4982-8c56-f05f6376e4d1')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3677da33-b148-4982-8c56-f05f6376e4d1')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1003 - Windows - Unusual Process (ex: word, iexplore, AcroRd..) Launched a Command Shell",
+                "description": "Unusual Process (ex: word, iexplore, AcroRd..) Launched a Command Shell",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 4688\r\n| where NewProcessName matches regex @\"((cmd)|(powershell)|(rundll32)|(wscript)|(scrcons)|(cscript)|(bash)|(sh))\\.exe\"\r\n| where ParentProcessName matches regex @\"((iexplore)|(winword)|(powerpnt)|(excel)|(access)|(notepad)|(outlook)|(calc)|(iexplore)|(mspub)|(visio)|(AcroRd\\d\\d))\\.exe\"",
+                "queryFrequency": "PT15M",
+                "queryPeriod": "PT15M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T1059"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "CommandLine",
+                                "columnName": "CommandLine"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1152')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1152')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-1152 - AD - Windows Privileged Escalation from a user account",
+                "description": "AD - Windows Privileged Escalation from a user account",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID in (4672, 4673, 4674)\n| where isnotempty(Account)\n| where AccountType != \"Machine\"\n| where Account != \"AD\\\\SA_LanSw_Scan\" //INC2851272 - This is an expected behavior for this service account through normal operations\n| summarize Priviligelist=make_list(PrivilegeList), evt_count=count() by Account, EventID, bin(TimeGenerated, 5m)\n| where evt_count > 30\n\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1006')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1006')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-1006 - Windows - User Added to Local Administrators",
+                "description": "Windows - User Added to Local Administrators",
+                "severity": "High",
+                "enabled": true,
+                "query": "let WellKnownLocalSID = \"S-1-5-32-5[0-9][0-9]$\"; //unique default SIDs for local admin groups\nSecurityEvent\n| where EventID == 4732\n| where TargetSid matches regex WellKnownLocalSID \n// Exclude Remote Desktop Users group: S-1-5-32-555\n| where TargetSid !in (\"S-1-5-32-555\")\n| where SubjectUserName !contains \"$\"\n| where AccountType !contains \"Machine\"\n| project\n    TimeGenerated,\n    Activity,\n    Computer,\n    GroupAddedMemberTo = TargetAccount,\n    SubjectUserName,\n    SubjectUserSid,\n    TargetSid",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [
+                    "T1078"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d4ab393a-f372-44f8-8e59-892b85424794')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d4ab393a-f372-44f8-8e59-892b85424794')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-932 - Windows - Powershell Malicious Usage Detected with Encoded Command",
+                "description": "Windows - Powershell Malicious Usage Detected with Encoded Command",
+                "severity": "High",
+                "enabled": true,
+                "query": "let EncodedList = dynamic(['-encodedcommand', '-enc']);\r\n// For more results use line below en filter one above. This will also return more FPs.\r\n// let EncodedList = dynamic(['-encodedcommand', '-enc', '-e']);\r\nlet TimeFrame = 30d; //Customizable h = hours, d = days\r\nSecurityEvent\r\n| where EventID == 4688\r\n| where TimeGenerated > ago(TimeFrame)\r\n| where CommandLine contains \"powershell\" or ParentProcessName contains \"powershell\"\r\n| where CommandLine has_any (EncodedList) or ParentProcessName has_any (EncodedList)\r\n| where Computer !contains \"DEV\" and Computer !contains \"UAT\"\r\n| where SubjectUserName !contains \"sysansible\"\r\n| where AccountType !contains \"machine\"\r\n| extend base64String = extract(@'\\s+([A-Za-z0-9+/]{20}\\S+$)', 1, CommandLine)\r\n| extend DecodedCommandLine = base64_decode_tostring(base64String)\r\n| where not(isempty(base64String) and isempty(DecodedCommandLine))\r\n| where Account !contains \"TEST\"\r\n//| summarize TotalEncodedExecutions = count() by Computer\r\n| where TargetAccount !contains \"CAP_SRV_NESSUS_HL\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/884')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/884')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-884 - Windows - Login Failures Followed By Success to the same Username",
+                "description": "Windows - Login Failures Followed By Success to the same Username",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n    | where EventID in (4624, 4625)\n    | where IpAddress !in (\"-\",\"::1\",\"127.0.0.1\") and isnotempty(Account)\n    | extend Outcome = iff(EventID == 4624, \"Success\", \"Failure\")\n    | summarize outcome_list=make_list(Outcome),starttime=min(TimeGenerated),endtime=max(TimeGenerated),OutcomeCount=count() by Account, IpAddress, Computer,bin(TimeGenerated, 15m)\n    | extend FailureBeforeSuccess = array_index_of(outcome_list, \"Success\")\n    | where FailureBeforeSuccess >=10\n    | where array_index_of(outcome_list, \"Success\") != 0",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/910')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/910')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE.PR-910 - Windows - Newly Observed Service Installed",
+                "description": "Windows - Newly Observed Service Installed",
+                "severity": "Low",
+                "enabled": true,
+                "query": "// 4697(S): A service was installed in the system. can also be included\n// 7045: A Service was Installed in the System\n// 7045 seems to be informational event and not available in SecurityEvent table\nlet List_ServiceNames= union\n(Event\n   | where TimeGenerated > ago(7d) and TimeGenerated < ago(1d)\n| where EventID == 7045\n| parse RenderedDescription with * 'Service Name:' ServiceName  'Service File Name:'  ServiceFileName 'Service Type:' Servicetype\n| summarize List_ServiceName=make_set(ServiceName) by Computer\n| project List_ServiceName\n),\n(SecurityEvent\n    | where TimeGenerated > ago(7d) and TimeGenerated < ago(1d)\n    | where EventID in (7045,4697)\n    | where ServiceName != \"MMAExtensionHeartbeatService\"\n    | summarize List_ServiceName=make_set(ServiceName) by Computer\n    | project List_ServiceName\n);\nunion \n(SecurityEvent\n| where TimeGenerated >= ago(1d)\n| where EventID in (7045,4697)),\n(Event\n| where TimeGenerated >= ago(1d)\n| where EventID == 7045)\n| where ServiceName in (List_ServiceNames)\n| project TimeGenerated,SubjectUserName,Computer,ServiceName,ServiceFileName,ServiceAccount\n    | where SubjectUserName !contains \"$\"",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P7D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [
+                    "T1543"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {
+                    "servicename": "ServiceName"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/921')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/921')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-921 - Windows - Password Spray",
+                "description": "Windows - Password Spray",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4625 and AccountType == \"User\"\n| where Status in~(\"0xC000006A\") or SubStatus in~(\"0xC000006A\") or ( LogonType == 3)\n| where Account !endswith \"$\"\n| summarize dcount(Account), Accounts_list=make_set(Account), evtcount=count() by IpAddress,Computer, bin(TimeGenerated,5m)\n| where dcount_Account>5",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1133')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1133')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1133 - Windows - Multiple Login Failures from the Same windows Workstation",
+                "description": "Windows - Multiple Login Failures from the Same windows Wokstation",
+                "severity": "Low",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4625 // Event ID for failed login attempts\n| where AccountType !contains \"Machine\"\n| where isnotempty(TargetUserName) and isnotempty(Computer)\n| summarize\n    FailureReasons = make_set(FailureReason),\n    IPAddresses = make_set(IpAddress),\n    FailureCount = count(),\n    LatestFailure = max(TimeGenerated)\n    by Computer, Account, bin(TimeGenerated, 15min)\n| where FailureCount > 25 // Adjust the threshold as needed\n| project Computer, Account, FailureCount, LatestFailure, FailureReasons, IPAddresses\n| order by FailureCount desc",
+                "queryFrequency": "PT30M",
+                "queryPeriod": "PT30M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bd6d0300-2290-47c2-8c54-492739526549')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bd6d0300-2290-47c2-8c54-492739526549')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-584 - Repeat Non-Windows Login Failures",
+                "description": "Repeat Non-Windows Login Failures",
+                "severity": "High",
+                "enabled": true,
+                "query": "Event\n| where Source !contains \"office\" and Source !contains \"windows\"\n| where RenderedDescription contains \"failure\" and RenderedDescription contains \"auth\"\n| where UserName !contains \"N/A\"\n",
+                "queryFrequency": "PT30M",
+                "queryPeriod": "PT30M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2220')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2220')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-2220 - Windows - Detect the execution of new and uncommon MSI installer files.",
+                "description": "Detect the execution of new and uncommon MSI installer files.<br>",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let timeWindow = 1d;\nlet expectedSoftwareNames = dynamic([\"Adobe Acrobat Reader DC\", \"CG_Analysis for Office 365\", \"Cisco AnyConnect Secure Mobility Client\", \"Google Chrome\", \"Oracle Java\", \"Margin Minder -Salient Interactive Miner 6.20 SP3\", \"CG_Mersive_SolsticeClient\", \"Microsoft Office 365\", \"CG_Microsoft Visual Studio\", \"CG_ORTEC Map Client\", \"ORTEC Load Building for SAP ERP Client\", \"CG_ORTEC_VSOPresentationClient\", \"WebTitan Cloud OTG\", \"TeamViewer Host - EndUser Client\", \"SAP GUI\", \"Microsoft Team\", \"Microsoft OneDrive\"]);\nSecurityEvent\n| where TimeGenerated >= ago(timeWindow)\n| where EventID == 4688 \n| where CommandLine contains \".msi\"\n| where AccountType !contains \"Machine\"\n| extend Process_parsed = extract(@\"\\\\(.+\\\\)*(.+)\\.(.+)$\",2, ParentProcessName)\n| extend IsExpectedSoftware = iif(Process_parsed in~ (expectedSoftwareNames), true, false) // Check if the software is expected\n| where IsExpectedSoftware == false // Filter out expected software executions\n| order by TimeGenerated desc",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1218"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "ProcessId",
+                                "columnName": "Process_parsed"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2217')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2217')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE.PR-2217 - Windows - BlueShell Malware Used in APT Attacks Targeting South Korea and Thailand",
+                "description": "BlueShell Malware Used in APT Attacks Targeting South Korea and Thailand",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "//let watchlist1=(hacktools.csv)\nSecurityEvent\n| where Process contains \"-ma\" or Process contains \"-mm\" and Process contains \"lsass\"\n//| where desc contains ~in watchlist1\n| where Process !in~ (\"GIT-CREDENTIAL-MANAGER.EXE\") //INC2856326 The GIT-CREDENTIAL-MANAGER.EXE process is part of the Git Credential Manager (GCM) for Windows. This tool helps manage your Git credentials securely. \n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f629077d-e49d-4e81-ba4d-505e27d50ed0')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f629077d-e49d-4e81-ba4d-505e27d50ed0')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE.LM.EX-1550 - Windows - Remote Scheduled Task Creation",
+                "description": "Detect scheduled task creation remotely",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where (EventID == 5145 and (AccessMask==\"WriteData\" or AccessMask==\"%%4417\")) and (RelativeTargetName endswith \"ScheduledTasks.xml\" or RelativeTargetName contains \"Windows\\\\Tasks\\\\*.job\")",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence",
+                    "LateralMovement",
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9b683f6d-07f8-40e2-a457-6cdb1cde9a15')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9b683f6d-07f8-40e2-a457-6cdb1cde9a15')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-1106 - Windows - User running dangerous Take Ownership action",
+                "description": "Rule will trigger when Take Ownership action is seen on windows event",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 4670\r\n| where EventData contains \"Take Ownership\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [
+                    "T1484"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2214')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2214')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-2214 - Windows - RedEyes, a CHM Virus that Utilizes Contaminated Water from Fukushima",
+                "description": "RedEyes, a CHM Virus that Utilizes Contaminated Water from Fukushima",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\n| where ParentProcessName contains \"cmd.exe\" and (ProcessName contains \"mshta.exe\" or FilePath contains \"MSHTA.EXE\")\n| where CommandLine contains \"c:\\\\windows\\\\system32\\\\cmd.exe navercorp\" \n| summarize StartTime= min(TimeGenerated), Endtime= max(TimeGenerated), count() by ProcessName, ProcessId, ParentProcessName, ObjectName",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2240')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2240')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE.DE-2240 - Windows - Detection of process used  New DarkGate Variants",
+                "description": "CSU TI-New Loading Approach used by New DarkGate Variant",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4688\n| where Process in~ (\"windbg.exe\", \"KeyScramblerLogon.exe\")\n| where CommandLine  has_any (\"dbgeng.dll\", \"SideLoader.dll\")\n| summarize count() by Process, CommandLine,Computer\n",
+                "queryFrequency": "PT12H",
+                "queryPeriod": "PT12H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence",
+                    "PrivilegeEscalation",
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1574",
+                    "T1625"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d06da241-34d6-4ac3-89f3-b405ff4d7f8a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d06da241-34d6-4ac3-89f3-b405ff4d7f8a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Windows- AD CS Attack",
+                "description": "AD CS Attack",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID in (4885, 4886, 4887, 4888, 4889, 4890, 4891, 4892, 4893, 4894, 4895)\r\n| where (EventID == 4886 and SubjectUserName == \"SYSTEM\") or (EventID in (4887, 4888, 4889, 4890, 4891, 4892, 4893, 4894, 4895) and (SubjectUserName == \"Administrator\" or SubjectUserName contains \"admin\"))\r\n| project TimeGenerated, Computer, SubjectUserName, LogonType, EventID\r\n| extend Reason = case(\r\n    EventID == 4885, \"Certificate Services issued a certificate\",\r\n    EventID == 4886, \"Certificate Services revoked a certificate\",\r\n    EventID == 4887, \"Certificate Services denied a certificate request\",\r\n    EventID == 4888, \"Certificate Services published a certificate revocation list (CRL)\",\r\n    EventID == 4889, \"Certificate Services loaded a certificate\",\r\n    EventID == 4890, \"Certificate Services published a certificate\",\r\n    EventID == 4891, \"Certificate Services completed a request\",\r\n    EventID == 4892, \"Certificate Services stored a certificate\",\r\n    EventID == 4893, \"Certificate Services verified a certificate\",\r\n    EventID == 4894, \"Certificate Services archived a certificate\",\r\n    EventID == 4895, \"Certificate Services removed a certificate\",\r\n    \"Unknown\"\r\n)\r\n| where Reason in (\"Certificate Services issued a certificate\", \"Certificate Services revoked a certificate\", \"Certificate Services denied a certificate request\")\r\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/778')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/778')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-778 - Windows - Critical Service Stopped or Disabled",
+                "description": "Windows - Critical Service Stopped or Disabled",
+                "severity": "High",
+                "enabled": true,
+                "query": "Event\n|where EventID in (7036, 5025, 4881)",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1489"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1005')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1005')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1005 - Windows - User added to critical security group followed by account delete after 12 hours",
+                "description": "Windows - User added to critical security group followed by account delete after 12 hours",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\n| where EventID == 4726\n| join (SecurityEvent\n    | where TimeGenerated > ago(12h)\n    | where EventID in (4720, 4728, 4732, 4756))\n    on UserPrincipalName\n| summarize start_time=min(TimeGenerated), end_time=max(TimeGenerated), eventcnt=count() by Account, Computer, EventID, Account1, Computer1, SubjectUserName, SubjectUserName1, TargetUserName, TargetUserName1\n| where eventcnt >= 1\n| project-reorder start_time, end_time",
+                "queryFrequency": "PT15M",
+                "queryPeriod": "PT15M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1103')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1103')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE.PR-1103 - Windows - Privileged Group Modified",
+                "description": "Windows - Privileged Group Modified",
+                "severity": "High",
+                "enabled": true,
+                "query": "//Wachlist of Privilege groups can be added to reduce false positives\nSecurityEvent\n| where EventID in (4735, 4737, 4755)\n| where AccountType == \"User\"\n| where TargetUserName in (\"Domain Admins\" , \"Enterprise Admins\") // Privilege groups in Heartland\n| where Account !contains \"$\" or Account != \"-\" or Account != \"NA\"\n| project TimeGenerated, IpAddress, Account, SubjectUserSid, Computer, EventID, Activity, TargetUserName, TargetSid \n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation",
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Account"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0d100657-0ab7-4cb2-afad-4b3d18fe3af4')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0d100657-0ab7-4cb2-afad-4b3d18fe3af4')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-867 - Windows - Excessive Failed Attempts to Access a Network Shared Resource From a Compromised Host",
+                "description": "Excessive Failed Attempts to Access a Network Shared Resource From a Compromised Host",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 5140\r\n| where IpAddress in (\r\n(_GetWatchlist('Compromised_Hosts_IP')\r\n| project SearchKey)\r\n)\r\n| summarize evtcount = count() by IpAddress , bin(TimeGenerated,5m)\r\n| where evtcount >= 3",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/970')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/970')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX.PE.PR-970 - Windows - Scheduled task quickly created then deleted",
+                "description": "Windows - Scheduled task quickly created then deleted",
+                "severity": "High",
+                "enabled": true,
+                "query": " let timeframe = 1d;\nlet spanoftime = 10m;\nlet threshold = 0;\n(SecurityEvent\n//| where TimeGenerated > ago(timeframe+spanoftime)\n// Scheduled Task Creation\n| where EventID == 4698\n| parse EventData with * '\"SubjectUserName\">' SubjectUserName \"<\" *\n| parse EventData with * '\"TaskName\">' TaskName \"<\" *\n| project\n    creationTime = TimeGenerated,\n    CreateEventID = EventID,\n    CreateActivity = Activity,\n    Computer = toupper(Computer),\n    CreatedBySubjectUserName = SubjectUserName,\n    TaskName\n)\n| join kind = inner \n    (SecurityEvent\n    | where TimeGenerated > ago(timeframe)\n    // Scheduled Task Deletion  \n    | where EventID == 4699\n    | parse EventData with * '\"SubjectUserName\">' SubjectUserName \"<\" *\n    | parse EventData with * '\"TaskName\">' TaskName \"<\" *\n    | project\n        deletionTime = TimeGenerated,\n        DeleteEventID = EventID,\n        DeleteActivity = Activity,\n        Computer = toupper(Computer),\n        DeletedBySubjectUserName = SubjectUserName,\n        TaskName\n    )\n    on Computer, TaskName\n| where deletionTime - creationTime < spanoftime\n| extend TimeDelta = deletionTime - creationTime\n| where tolong(TimeDelta) >= threshold\n| where CreatedBySubjectUserName !contains \"$\" and DeletedBySubjectUserName !contains \"$\"\n| project\n    TimeDelta,\n    creationTime,\n    CreateEventID,\n    CreateActivity,\n    Computer,\n    deletionTime,\n    DeleteEventID,\n    DeleteActivity,\n    CreatedBySubjectUserName,\n    DeletedBySubjectUserName,\n    TaskName\n\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "CreatedBySubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/29d0b00c-5aa4-46fe-a4b7-658d0fd46365')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/29d0b00c-5aa4-46fe-a4b7-658d0fd46365')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1485 - Windows - Trusted Domain Removed",
+                "description": "Windows - Trusted Domain Removed",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where  EventSourceName == \"Microsoft-Windows-Security-Auditing\"\r\n| where EventID == 4707\r\n| extend HostCustomEntity = Computer",
+                "queryFrequency": "PT15M",
+                "queryPeriod": "PT15M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1493')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1493')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1493 - Windows - Successful Logons to Different Users from Same Source",
+                "description": "Windows - Successful Logons to Different Users from Same Source",
+                "severity": "High",
+                "enabled": true,
+                "query": "SecurityEvent \n| where EventID == 4624 and AccountType contains \"user\"\n| where isnotempty(TargetUserName)\n| where isnotempty(IpAddress) and IpAddress != '-' and IpAddress != '::1'\n| where not(ipv4_is_private(IpAddress))\n//| where IpAddress !in ((_GetWatchlist('RDP_IPs') | project SearchKey))\n| summarize\n    starttime=min(TimeGenerated),\n    endtime=max(TimeGenerated),\n    dcount(TargetUserName),\n    TargetedAccount=make_set(TargetUserName),\n    evtcount=count() by IpAddress, bin(TimeGenerated, 3m)\n| where dcount_TargetUserName >10 and evtcount > 10\n\n",
+                "queryFrequency": "PT2H",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT2H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "IP"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/902')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/902')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-902 - Windows - Multiple account lockout",
+                "description": "Windows - Multiple account lockout",
+                "severity": "Low",
+                "enabled": true,
+                "query": " SecurityEvent\n| where EventID == 4740\n| where SubjectAccount !endswith \"$\"\n| summarize\n    Starttime=min(TimeGenerated),\n    Endtime=max(TimeGenerated),\n    dcount(TargetUserName),dcount(Computer),computerlist=make_list(Computer),\n    TargetUserlist=make_set(TargetUserName), evt_count=count()\n    by SubjectUserName, bin(TimeGenerated, 10m), Computer\n| where evt_count > 2",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Account"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "SubjectUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fb63d119-cc11-41ac-80bf-e4f112f5364b')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fb63d119-cc11-41ac-80bf-e4f112f5364b')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-1231 - Windows - Multiple Lockout for same Username",
+                "description": "Multiple Lockout for same Username in 30 minutes.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "SecurityEvent\r\n| where EventID == 4740\r\n| where SubjectAccount !endswith \"$\"\r\n| summarize Evntcount = count() by TargetAccount //, bin(TimeGenerated,40m)\r\n| where Evntcount >= 2",
+                "queryFrequency": "PT30M",
+                "queryPeriod": "PT30M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1531"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetAccount"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

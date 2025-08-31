@@ -1,0 +1,1891 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8af63e98-1596-4e10-9071-77bebd691e9d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8af63e98-1596-4e10-9071-77bebd691e9d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-1526 - FW - New host acting as mail server",
+                "description": "New host acting as mail server",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n  | where SourceIP    !in(\r\n  (_GetWatchlist(' mail server IPAdrreses')\r\n  | project SearchKey))\r\n  | where not(ipv4_is_match( \"10.0.0.0\", SourceIP,8))\r\n| where DestinationPort in (25,587)\r\n| summarize count() by DestinationIP ,bin(TimeGenerated,5m)\r\n| where count_ >=25",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Collection"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4d0ddc90-5512-4b4c-b693-4f619190b3c0')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4d0ddc90-5512-4b4c-b693-4f619190b3c0')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-290 - FW - Connections from TOR Nodes",
+                "description": "Connections from TOR Nodes",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let ioc_lookBack = 14d;\r\nThreatIntelligenceIndicator\r\n| where TimeGenerated >= ago(ioc_lookBack) and ExpirationDateTime > now()\r\n| where Active == true\r\n| summarize LatestIndicatorTime = arg_max(TimeGenerated, *) by IndicatorId\r\n| where Description has \"tor_ip\"\r\n| project LatestIndicatorTime, NetworkIP, ThreatType, Description\r\n| join kind=innerunique (\r\n    CommonSecurityLog\r\n    | where TimeGenerated > ago(1h)\r\n    | where DeviceVendor == \"Fortinet\"\r\n    | where Activity == \"TRAFFIC\" and DeviceAction != \"deny\"\r\n    )\r\n    on $left.NetworkIP == $right.SourceIP\r\n| project-reorder TimeGenerated, SourceIP, Description, ThreatType",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "P14D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T1090"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fe9cfe7b-50be-415c-9983-0896fff4e03d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fe9cfe7b-50be-415c-9983-0896fff4e03d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-291 - FW - Connections from Known Malicious IP addresses. B",
+                "description": "Connections from Known Malicious IP addresses. B",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let SuspetiousIPs = (_GetWatchlist('Suspetious_IPs')\r\n    | project SearchKey);\r\nCommonSecurityLog\r\n| where SourceIP in (SuspetiousIPs)\r\n| where ipv4_is_private( DestinationIP)\r\n| extend action = extract(\"[A-Za-z:]+[ ]([a-z]+)\", 1, Activity)\r\n// You can specify other filters here if needed, for example:\r\n// | where action == \"accept\"\r\n| summarize count() by DestinationIP, bin(TimeGenerated, 30m), DeviceAction, DestinationPort, SourceIP\r\n| where count_ > 10",
+                "queryFrequency": "PT3H",
+                "queryPeriod": "PT3H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Reconnaissance",
+                    "Collection"
+                ],
+                "techniques": [
+                    "T1595"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e65bdcd5-790d-4ef4-9db4-171f15dc9937')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e65bdcd5-790d-4ef4-9db4-171f15dc9937')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-291 - FW - Connections to Known Malicious IP addresses. A",
+                "description": "Connections to Known Malicious IP addresses",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let SuspetiousIPs = (_GetWatchlist('Suspetious_IPs')\n    | project SearchKey);\nCommonSecurityLog\n| where DestinationIP in (SuspetiousIPs)\n| extend action = extract(\"[A-Za-z:]+[ ]([a-z]+)\", 1, Activity)\n// You can specify other filters here if needed, for example:\n// | where action == \"accept\"\n| where DeviceAction !in(\"ssl-login-fail\", \"timeout\")\n| where not(ipv4_is_in_range(DestinationIP, \"13.107.136.0/24\")) //Microsoft IP\n| where not(ipv4_is_in_range(DestinationIP, \"13.107.21.0/24\")) //Microsoft IP\n| where not(ipv4_is_in_range(DestinationIP, \"204.79.197.0/24\")) //Microsoft IP\n| where not(ipv4_is_in_range(DestinationIP, \"172.64.0.0/15\")) //Whitelisted netblocks - Cloudflare Reverse Proxy\n| where not(ipv4_is_in_range(DestinationIP, \"192.229.208.0/22\")) //Whitelisted netblocks - DigiCert OCSP / CRL\n| where not(ipv4_is_in_range(DestinationIP, \"20.64.0.0/10\")) //Microsoft IP\n| summarize count()\n    by\n    DestinationIP,\n    bin(TimeGenerated, 30m),\n    DeviceAction,\n    DestinationPort,\n    SourceIP,\n    Computer\n| where count_ > 10\n\n",
+                "queryFrequency": "PT3H",
+                "queryPeriod": "PT3H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T0885"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f4d4e2b7-fac4-40da-b530-572a8474f365')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f4d4e2b7-fac4-40da-b530-572a8474f365')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-293 - FW - Connections to TOR nodes",
+                "description": "Connections to TOR nodes",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let ioc_lookBack = 14d;\r\nThreatIntelligenceIndicator\r\n| where TimeGenerated >= ago(ioc_lookBack) and ExpirationDateTime > now()\r\n| where Active == true\r\n| summarize LatestIndicatorTime = arg_max(TimeGenerated, *) by IndicatorId\r\n| where Description has \"tor_ip\"\r\n| project LatestIndicatorTime, NetworkIP, ThreatType, Description\r\n| join kind=innerunique (\r\n    CommonSecurityLog\r\n    | where TimeGenerated > ago(1h)\r\n | where DeviceVendor == \"Fortinet\"\r\n    | where Activity == \"TRAFFIC\" and DeviceAction != \"deny\"\r\n    )\r\n    on $left.NetworkIP == $right.DestinationIP\r\n| project-reorder TimeGenerated, DestinationIP, Description, ThreatType",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "P14D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T1090"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0e3f1dee-a682-4816-a451-1455c8686b5b')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0e3f1dee-a682-4816-a451-1455c8686b5b')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-295 - FW - Dropped Connections from suspicious countries",
+                "description": "Dropped Connections from suspicious countries",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where DeviceAction contains \"Deny\" or DeviceAction contains \"drop\"\r\n| where SourceIP in(\r\n(_GetWatchlist('ChinaIPs') \r\n| project SearchKey)\r\n)",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion",
+                    "Discovery"
+                ],
+                "techniques": [
+                    "T1562",
+                    "T1078",
+                    "T1049"
+                ],
+                "subTechniques": [
+                    "T1562.004"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e0e32152-aaff-4ca0-9590-5ababc25ca78')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e0e32152-aaff-4ca0-9590-5ababc25ca78')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-303 - FW - Inbound Accept Connection On Suspicious Ports",
+                "description": "This analytic rule detcets when there has been an accept connection on any of the  Sensitive ports",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "//let timeframe = 3h;\r\nlet portrange = dynamic([\"21\", \"23\", \"67\", \"110\", \"111\", \"135\", \"137\", \"138\", \"139\", \"143\", \"445\", \"520\", \"547\", \"995\", \"1080\", \"1433\", \"1434\",\r\n    \"1521\", \"1723\", \"1900\", \"2483\", \"2484\", \"3306\", \"3389\", \"5900\", \"8080\", \"80\", \"5432\", \"27017\", \"8443\", \"5000\", \"5001\", \"9092\", \"9000\", \"9443\", \r\n    \"8243\", \"6380\", \"5045\", \"49158\", \"123\", \"49155\", \"12000\", \"11064\", \"19092\", \"389\", \"88\", \"49159\", \"3268\", \"993\", \"9243\", \"3200\", \"9200\", \"5601\", \r\n    \"5044\", \"49713\", \"8000\", \"7015\", \"49154\"]);\r\nlet AllowedIP = (_GetWatchlist('Coolerlist_IPs_with_Port22')\r\n    | project SearchKey);\r\nCommonSecurityLog\r\n| where DeviceProduct == \"Fortigate\" or DeviceProduct == \"VPN-1 & FireWall-1\"\r\n| parse Activity with \"traffic:\" SubType \" \" Action \r\n| where not(ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16) or ipv4_is_match(\"155.227.0.0\", SourceIP, 16) or (SourceIP contains \"0.0.0.0\" and DestinationPort == \"67\") or (SourceIP contains \"80.239.119.96\" and DestinationPort == \"389\") or (SourceIP contains \"62.182.242.229\" and DestinationPort == \"3389\") or (SourceIP contains \"194.138.39.24\" and DestinationPort == \"3389\") or ipv4_is_match(\"169.254.0.0\", SourceIP, 16) or (SourceIP startswith \"100.116.202.\") or (SourceIP startswith \"100.116.244.\") or (SourceIP startswith \"155\") or (SourceIP startswith \"10\") or (SourceIP has \"89.248.8.222\" and DestinationPort == \"22\"))\r\n//| where SourceIP !startswith \"100.116.202.\" or SourceIP !startswith \"100.116.244.\"\r\n// 89.248.8.222 RE: Problemer med oppkobling mot SFTP - partnersftp.nortura.no\r\n| where Action == \"accept\" or DeviceAction == \"Accept\"\r\n| where DestinationPort in (portrange)\r\n| where isnotempty(DestinationPort)\r\n| where isnotempty(SourceIP)\r\n| where DestinationPort == 22 and SourceIP !in (AllowedIP)\r\n| summarize\r\n    dcount(DestinationPort),\r\n    start_time= min(TimeGenerated),\r\n    end_time= max(TimeGenerated),\r\n    DestIp_list= make_set(DestinationIP),\r\n    destPort_set= make_set(DestinationPort)\r\n    by SourceIP, CheckPointAction=DeviceAction, DeviceVendor, FortigateAction=Action\r\n//For 194.138.39.24: We have received update from Firewall Team stating that \"It is an Expected and authorized communication for vpn-siemens\" (INC3389556, INC3470770)\r\n//APIPA range has been excluded towards DNS servers on port 137 and 53. If NetBIOS is being used on a network with APIPA addresses, then the NBNS(NetBIOS Name Service) on port 137 can be used to resolve NetBIOS computer names to their corresponding APIPA IP addresses. \r\n//Traffic from 100.116.202.* and 100.116.244.* are expected under \"DOP OpsView SSH Tunnel\" policy on Fortigate firewall. Details shared by NetSec team dated 30/03/2023",
+                "queryFrequency": "PT3H",
+                "queryPeriod": "PT3H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T0885"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT3H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c3a87377-02aa-4ea4-8574-c0060b4b0d87')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c3a87377-02aa-4ea4-8574-c0060b4b0d87')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-317 - FW - Potential Connection to a Known Botnet CandC",
+                "description": "Potential Connection to a Known Botnet CandC",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let Botnet_CAndC_ips = _GetWatchlist('botnetips');\r\nCommonSecurityLog\r\n| where (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16))\r\n| where not(ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\", DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16))\r\n//| where DeviceAction contains \"Accept\" or DeviceAction contains \"Allow\"\r\n| where DestinationIP in~ (Botnet_CAndC_ips)\r\n| where DestinationPort !in (25, 53)\r\n| project SourceIP, DestinationIP, Computer",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T0885"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/325')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/325')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC-325 - FW - Remote: IRC Connections",
+                "description": "Remote IRC Connections. Detects events that use common ports for Internet Relay Chat (IRC) to the Internet. IRC is a common protocol that can be used for chat and file transfers. This protocol is also a good candidate for remote control of malware and data transfers to and from a network.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let IRCports = dynamic([6665, 6666, 6667, 6668, 6669, 7000]);\nCommonSecurityLog\n| where TimeGenerated >= ago(1d)\n| where DestinationPort in (IRCports)\n| where not(ipv4_is_private(SourceIP)) and (ipv4_is_private(DestinationIP))\n| where SourceIP != \"0.0.0.0\" //In a Mac OS environment, a source IP address of 0.0.0.0 when communicating with destination port 7000 typically indicates that the application is either attempting to bind to all available network interfaces or is in a state where it hasn't yet acquired a valid IP address from a DHCP server. - INC2928702\n| where DeviceAction !in (\"deny\")\n| summarize start_time=min(TimeGenerated), end_time=max(TimeGenerated)\n    by\n    SourceIP,\n    DestinationIP,\n    DestinationPort,\n    DeviceName,\n    Protocol,\n    Reason,\n    DeviceAction\n\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T1219"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/298')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/298')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-298 - FW - Excessive Firewall Denies from Remote Host",
+                "description": "FW - Excessive Firewall Denies from Remote Host",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\n| where DeviceProduct == \"Fortigate\" or DeviceProduct == \"VPN-1 & FireWall-1\"\n| parse Activity with \"traffic:\" SubType \" \" Action \n| where not(ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16) or ipv4_is_match(\"155.227.0.0\", SourceIP, 16))\n| where (ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\", DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16) or ipv4_is_match(\"155.227.0.0\", SourceIP, 16))\n| where DeviceAction in~(\"deny\",\"Deny\",\"reject\",\"drop\") or Action in~(\"deny\",\"Deny\",\"reject\",\"drop\")\n| summarize\n    start_time=min(TimeGenerated),\n    end_time=max(TimeGenerated),\n    dcount(DestinationIP),\n    destlist= make_set(DestinationIP),\n    dcount(DestinationPort),\n    destport= make_set(DestinationPort),\n    count()\n    by SourceIP, DeviceAction, Action,bin(TimeGenerated, 05m),DeviceProduct\n| where count_ > 40",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery",
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1562",
+                    "T1046"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "IP"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0ba34ce5-b872-453a-93ce-7cc2c8f69b50')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0ba34ce5-b872-453a-93ce-7cc2c8f69b50')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-299 - FW - Excessive Firewall Denies from Single Source",
+                "description": "FW - Excessive Firewall Denies from Single Source",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where DeviceAction == \"ssl-login-fail\" or DeviceAction == \"dropped\" // Filter for deny actions\r\n| where DestinationPort != 514 // Exclude port 514\r\n| summarize DenyCount = count() by SourceIP, bin(TimeGenerated, 5m)\r\n| where DenyCount > 300\r\n| project SourceIP, DenyCount, TimeGenerated\r\n| sort by DenyCount desc",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7c43ab5d-41a9-4d6c-a71e-325f2dea3fb4')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7c43ab5d-41a9-4d6c-a71e-325f2dea3fb4')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-311 - FW - Network Port Sweep from Internal Network",
+                "description": "FW - Network Port Sweep from Internal Network",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\n| where (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16))\n| where DestinationIP != \"255.255.255.255\" //Broadcast IP used for DHCP, network troubleshooting and otherpurposes.\n| where DeviceAction in (\"accept\", \"deny\")\n| summarize starttime=min(TimeGenerated), endtime=max(TimeGenerated), Eventcount=count() by SourceIP, DestinationIP, DestinationPort, bin(TimeGenerated, 5m)\n| where DestinationPort !in (53)\n| where Eventcount > 2000\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1340dad6-a1dd-4016-89fd-5a79718cada6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1340dad6-a1dd-4016-89fd-5a79718cada6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-313 - FW - Ping sweeps from External IP",
+                "description": "FW - Ping sweeps from External IP",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n|where * contains \"ICMP\"\r\n|where not(ipv4_is_match( \"10.0.0.0\", SourceIP,8) or ipv4_is_match( \"172.16.0.0\",SourceIP,12) or ipv4_is_match( \"192.168.0.0\",SourceIP,16))\r\n|where DeviceAction in (\"accept\",\"deny\")\r\n|summarize starttime=min(TimeGenerated), endtime=max(TimeGenerated), Eventcount=count() by SourceIP,DestinationPort, bin(TimeGenerated, 5m)\r\n|where Eventcount>=100",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8ce96e1f-fe5c-49fb-9523-58169e8ada30')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8ce96e1f-fe5c-49fb-9523-58169e8ada30')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-315 - FW - Possible Local IRC Server",
+                "description": "FW - Possible Local IRC Server",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where not(ipv4_is_private( SourceIP))\r\n| where ipv4_is_private( DestinationIP)\r\n| where Message contains \"IRC Detected Based on Application\" or Message contains \"IRC Detected Based on Content\"\r\n| where * contains \"TCP\"",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/316')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/316')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-316 - FW - Possible Port Scan Detected from External IP",
+                "description": "FW - Possible Port Scan Detected from External IP",
+                "severity": "High",
+                "enabled": true,
+                "query": "CommonSecurityLog\n//| where DeviceVendor == \"Fortinet\" and DeviceProduct == \"Fortigate\"\n//| where not(ipv4_is_match(\"10.0.0.0\", SourceIP) or ipv4_is_match(\"172.16.0.0\", SourceIP) or ipv4_is_match(\"192.168.0.0\", SourceIP))\n//| where not(ipv4_is_match(\"10.43.236.0\", SourceIP, 22) or ipv4_is_match(\"10.43.112.0\", SourceIP, 22) or ipv4_is_match(\"10.37.129.0\", SourceIP, 24) or ipv4_is_match(\"10.246.101.10\", SourceIP, 32) or ipv4_is_match(\"10.247.226.241\", SourceIP, 32) or ipv4_is_match(\"10.247.226.0\", SourceIP, 22))\n| where ipv4_is_private(SourceIP) == false\n| extend action = extract(\"[ ]([a-z]+)\", 1, Activity)\n| where action !contains \"deny\"\n| summarize\n    TotalDistinctPorts = dcount(DestinationPort),\n    destinationIP = make_set(DestinationIP),\n    ports = make_set(DestinationPort),\n    Actionlist = make_set(action),\n    evt_count = count()\n    by SourceIP, bin(TimeGenerated, 5m)\n| where TotalDistinctPorts > 100 and evt_count > 5\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery",
+                    "Reconnaissance",
+                    "ResourceDevelopment",
+                    "CommandAndControl",
+                    "DefenseEvasion",
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1590",
+                    "T1597",
+                    "T1583",
+                    "T1584",
+                    "T1587",
+                    "T1588",
+                    "T1608",
+                    "T1105",
+                    "T1612",
+                    "T1040"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P1D",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "IP"
+                        ],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c2ccf31d-6b9c-49f1-bea8-63a4cdbc3541')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c2ccf31d-6b9c-49f1-bea8-63a4cdbc3541')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-318 - FW - Potential Local Port Scan Detected",
+                "description": "FW - Potential Local Port Scan Detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n|where DeviceVendor == \"Fortinet\"\r\n|where (ipv4_is_match( \"10.0.0.0\", SourceIP ,8) or ipv4_is_match( \"172.16.0.0\",SourceIP,12) or ipv4_is_match( \"192.168.0.0\",SourceIP,16))\r\n|where (ipv4_is_match( \"10.0.0.0\", DestinationIP,8) or ipv4_is_match( \"172.16.0.0\",DestinationIP,12) or ipv4_is_match( \"192.168.0.0\",DestinationIP,16))\r\n|where DeviceAction  in (\"Recon Events\", \"Suspicious Events\")\r\n|summarize starttime=min(TimeGenerated), endtime=max(TimeGenerated), Eventcount=count() by DestinationPort,bin(TimeGenerated, 3m)\r\n|where Eventcount>=5\r\n|where Eventcount>=100",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4948b6dd-365e-45bd-9771-e8cbf7704d67')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4948b6dd-365e-45bd-9771-e8cbf7704d67')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-319 - FW - Proxy Avoidance: Direct Internet Access (accepted by FW)",
+                "description": "FW - Proxy Avoidance: Direct Internet Access (accepted by FW)",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16))\r\n| where not (ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\", DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16))\r\n| where DeviceAction == \"Allow\" \r\n// acceptance by local to remote\r\n//| summarize cnt = dcount(SourceIP) by TimeGenerated",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/80db495c-7300-45e7-98ff-fbc63579e5ee')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/80db495c-7300-45e7-98ff-fbc63579e5ee')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-321 - FW - Recon Followed by Accept",
+                "description": "FW - Recon Followed by Accept",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where SourceIP !in~ (\"VA Scanner Source IP\", \"Qradar Servers\", \"SNOW discovery Servers\", \"SCOM Servers\", \"IPV6 Traffic\")\r\n| where * contains \"Basic Recon Rules\"\r\n| where DeviceAction == \"accept\"\r\n| summarize starttime=min(TimeGenerated), endtime=max(TimeGenerated), Eventcount=count() by SourceIP, bin(TimeGenerated, 30m)",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fab6ad4e-43c3-435a-a0d6-d36348b693f8')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fab6ad4e-43c3-435a-a0d6-d36348b693f8')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI-323 - FW - Remote access from external network",
+                "description": "FW - Remote access from external network",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where not(ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16))\r\n| where Message contains (\"Authentication success\")\r\n| where DeviceAction == \"Allow\"\r\n| where DestinationPort !in (\"22\", \"23\")",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1e632b66-486c-463a-8bea-bbf167dce60e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1e632b66-486c-463a-8bea-bbf167dce60e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DI.RE-1529 - FW - Wannacry Ransomware Suspicious SMB activity",
+                "description": "Wannacry Ransomware Suspicious SMB activity",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let WannaCryIP = _GetWatchlist(\"wanncryips\");\nCommonSecurityLog\n| where SourceIP in (WannaCryIP)\n| where DestinationPort in (445)",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery",
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1529"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "SourceHostName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ea74ad8a-687e-4f96-985e-0f8b635002ce')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ea74ad8a-687e-4f96-985e-0f8b635002ce')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EF-292 - FW - Connections to Known Wannacry Command and Control Servers - Coke Canada",
+                "description": "UC-EF-292 - FW - Connections to Known Wannacry Command and Control Servers - Coke Canada",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let WannaCryIP = _GetWatchlist(\"wanncryips\");\r\nCommonSecurityLog\r\n| where ipv4_is_private( SourceIP)\r\n| where DestinationIP in (WannaCryIP)\r\n| where DestinationPort in (445)",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/523628a3-778d-46c3-9ae5-a9c8469d4aaa')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/523628a3-778d-46c3-9ae5-a9c8469d4aaa')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1441 -FW - Detected BitTorrent Activity",
+                "description": "Detected BitTorrent Activity",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let dt_lookBack = 1h;\n  let ioc_lookBack = 14d; // Look back 14 days for threat intelligence indicators\nThreatIntelligenceIndicator\n| where TimeGenerated >= ago(ioc_lookBack)\n| where ThreatType == \"P2P\" or ThreatType == \"Botnet\" or ThreatType == \"Unknown\"\n| summarize Indicator_TimeGenerated = arg_max(TimeGenerated, *) by IndicatorId\n| where isnotempty(NetworkIP)\n| join kind=innerunique (CommonSecurityLog\n| where TimeGenerated >= ago(dt_lookBack)\n| where DeviceEventCategory contains \"app-ctrl\"\n| project-rename Firewall_TimeGenerated = TimeGenerated,Firewall_action=DeviceAction\n| where Firewall_action !contains \"block\"\n| extend RemoteIP= SourceIP\n| extend RemoteIP=DestinationIP\n|where isnotempty( RemoteIP)\n) on $left.NetworkIP == $right.RemoteIP\n  | summarize Firewall_TimeGenerated = arg_max(Firewall_TimeGenerated, *) by IndicatorId, RemoteIP\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T0863"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "RemoteIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c2bbb097-f72e-4781-981f-f608a914e844')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c2bbb097-f72e-4781-981f-f608a914e844')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1442 - Fortigate FW - Adware URL Correlation",
+                "description": "Fortigate FW - Adware URL Correlation",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\",SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16) or ipv4_is_match(\"192.0.0.0\", SourceIP, 16))\r\n| where not((ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\",DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16) or ipv4_is_match(\"192.0.0.0\", DestinationIP, 16)))\r\n| where DeviceAction contains \"allow\" or DeviceAction contains \"accept\"\r\n|where IndicatorThreatType contains \"MaliciousUrl\" or IndicatorThreatType contains \"malware\" or IndicatorThreatType contains \"adware\"\r\n//common adwares https://www.malwarebytes.com/blog/detection/adware\r\n| where RequestURL in~ (\"ugyplysh.com\" , \"lulachu.com\", \"viatepigan.com\")\r\n| project SourceIP, DestinationIP, DestinationPort, DeviceAction, RequestURL, IndicatorThreatType",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [
+                    "T0863"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8a070244-9c89-42b7-88e2-e6d32a0fc9e3')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8a070244-9c89-42b7-88e2-e6d32a0fc9e3')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-289 - FW - Connection to Rogue Service",
+                "description": "FW - Connection to Rogue Service",
+                "severity": "High",
+                "enabled": true,
+                "query": "let CIDRange = '192.16.10.1/24';\r\nCommonSecurityLog\r\n| where ipv4_is_in_range( SourceIP, CIDRange)\r\n| where DeviceAction contains \"allow\"\r\n| where DestinationPort in (25, 21, 20, 53, 139, 445, 1521, 3306, 1433, 1630, 389, 636, 123)\r\n",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "CommandAndControl"
+                ],
+                "techniques": [
+                    "T1071"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a4f92337-7587-4ac5-968c-407cf62c1747')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a4f92337-7587-4ac5-968c-407cf62c1747')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-296 - FW - Excessive Firewall Accepts across multiple hosts",
+                "description": "FW - Excessive Firewall Accepts across multiple hosts",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where not(ipv4_is_match( \"10.0.0.0\", SourceIP,8) or ipv4_is_match( \"172.16.0.0\",SourceIP,12) or ipv4_is_match( \"192.168.0.0\",SourceIP,16) or ipv4_is_match( \"207.228.169.42\", SourceIP, 30) or ipv4_is_match( \"12.249.175.174\", SourceIP,30) or ipv4_is_match( \"148.76.161.181\", SourceIP,31) or ipv4_is_match( \"52.151.214.232\", SourceIP,32) or ipv4_is_match( \"52.151.214.143\", SourceIP,32) or ipv4_is_match(\"169.254.0.0\",SourceIP,16) or SourceIP == \"209.240.38.74\" or SourceIP == \"69.122.15.109\" or SourceIP == \"108.179.26.222\")\r\n//Excluded Apipa IP Range.\r\n| where DeviceAction == \"Allow\"\r\n|summarize Start_time=min(TimeGenerated),end_time=max(TimeGenerated),dcount(DestinationIP),destip_list=make_set(DestinationIP),count() by SourceIP,bin(TimeGenerated,10m), DeviceName\r\n| where count_ >=10",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "Reconnaissance",
+                    "InitialAccess",
+                    "LateralMovement",
+                    "CommandAndControl",
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1595",
+                    "T1592",
+                    "T1078",
+                    "T0822",
+                    "T1133",
+                    "T0886",
+                    "T1021",
+                    "T0869",
+                    "T1485",
+                    "T1662"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/af5f5203-66b2-45b3-b7ab-d2fa8cf3b0ab')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/af5f5203-66b2-45b3-b7ab-d2fa8cf3b0ab')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-297 - FW - Excessive Firewall Denies from Local Host",
+                "description": "FW - Excessive Firewall Denies from Local Host",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16))\r\n| where DeviceAction == \"deny\"\r\n| summarize DenyCount = count(), DestIPCount = dcount(DestinationIP) by SourceIP,bin(TimeGenerated, 5m),DeviceAction\r\n| where DenyCount > 40 and DestIPCount > 2",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "DefenseEvasion",
+                    "Discovery"
+                ],
+                "techniques": [
+                    "T1562",
+                    "T1046"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/WTXC6T1TSX')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/WTXC6T1TSX')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IA-1439 - Fortigate FW - Internal Host Communication with Phishing URL",
+                "description": "FortiGate FW - Internal Host Communication with Phishing URL",
+                "severity": "High",
+                "enabled": true,
+                "query": "let dt_lookBack = 1h;\nlet ioc_lookBack = 14d; // Look back 14 days for threat intelligence indicators\nThreatIntelligenceIndicator\n| where TimeGenerated >= ago(ioc_lookBack)\n| summarize Indicator_TimeGenerated = arg_max(TimeGenerated, *) by IndicatorId\n| where isnotempty(NetworkIP)\n| join kind=innerunique (CommonSecurityLog\n    | where TimeGenerated >= ago(dt_lookBack)\n    | where DeviceProduct contains \"fortigate\"\n    | where  (ipv4_is_match(\"10.0.0.0\", SourceIP, 8) or ipv4_is_match(\"172.16.0.0\", SourceIP, 12) or ipv4_is_match(\"192.168.0.0\", SourceIP, 16) or ipv4_is_match(\"192.0.0.0\", SourceIP, 16))\n    | where TimeGenerated >= ago(dt_lookBack)\n    | project-rename Firewall_TimeGenerated = TimeGenerated, Firewall_action=DeviceAction\n    | extend RemoteIP= SourceIP\n    | where isnotempty(RemoteIP)\n    | where isnotempty(RequestURL)\n    )\n    on $left.Url == $right.RequestURL",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess",
+                    "Execution",
+                    "CredentialAccess",
+                    "CommandAndControl",
+                    "Collection",
+                    "Reconnaissance"
+                ],
+                "techniques": [
+                    "T1566",
+                    "T1203",
+                    "T1059",
+                    "T1556",
+                    "T1110",
+                    "T1071",
+                    "T1105",
+                    "T1114",
+                    "T1005",
+                    "T1598"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c589a62c-cb55-4e14-b1eb-33b8e8f69e2e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c589a62c-cb55-4e14-b1eb-33b8e8f69e2e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IA-304 - FW - Internal Communication with a Malware URL",
+                "description": "FW - Internal Communication with a Malware URL",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let malicious_urls = ThreatIntelligenceIndicator\r\n| where Description contains \"URL\"\r\n| where Active == true\r\n| project URL = Url;\r\nCommonSecurityLog\r\n|where not(ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\",DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16) or ipv4_is_match(\"192.0.0.0\", DestinationIP, 16))\r\n| extend URL = extract(\"http[s]?://[a-zA-Z0-9./-]+\", 0, RequestURL)\r\n| where isnotempty(URL)\r\n| join kind=inner (malicious_urls) on URL\r\n| project TimeGenerated, URL, SourceIP, DestinationIP, DestinationPort, DeviceAction",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ce7c0cf5-7262-40e7-922b-50ca5a7a9ea0')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ce7c0cf5-7262-40e7-922b-50ca5a7a9ea0')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IA-305 - FW - Internal Connection to Address Hosting Malware",
+                "description": "FW - Internal Connection to Address Hosting Malware",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let MalwareIP = (_GetWatchlist('malware_ips') | project SearchKey);\r\nCommonSecurityLog\r\n|where not(ipv4_is_match(\"10.0.0.0\", DestinationIP, 8) or ipv4_is_match(\"172.16.0.0\",DestinationIP, 12) or ipv4_is_match(\"192.168.0.0\", DestinationIP, 16) or ipv4_is_match(\"192.0.0.0\", DestinationIP, 16))\r\n| where DestinationIP in (MalwareIP)\r\n| where Reason !contains \"rst\"\r\n| where ReceivedBytes != \"\" or SentBytes != \"\"\r\n| project TimeGenerated, DeviceProduct, Activity, DeviceAction, ApplicationProtocol, DestinationIP, DestinationPort, DeviceName, Protocol, Reason, SourceIP, DeviceEventCategory, Computer, ReceivedBytes, SentBytes\r\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), sourceIPList=make_set(SourceIP) by DeviceProduct, Activity, DeviceAction, ApplicationProtocol, DestinationIP, DestinationPort, DeviceName, Protocol, Reason, DeviceEventCategory, Computer, ReceivedBytes, SentBytes",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess",
+                    "CommandAndControl",
+                    "Reconnaissance",
+                    "Persistence",
+                    "Impact",
+                    "Exfiltration"
+                ],
+                "techniques": [
+                    "T1078",
+                    "T1071",
+                    "T1437",
+                    "T1595",
+                    "T1543",
+                    "T1499",
+                    "T1642",
+                    "T1646",
+                    "T1041"
+                ],
+                "subTechniques": [
+                    "T1071.001",
+                    "T1437.001"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/074341b8-684a-499b-bf62-fcb940616c0d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/074341b8-684a-499b-bf62-fcb940616c0d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-301 - FW - Firewall Events Stopped",
+                "description": "Firewall Events Stopped",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where DeviceProduct == \"Fortigate\"\r\n| summarize LastSeen = max(TimeGenerated),  DownTime = datetime_diff(\"minute\",now(), max(TimeGenerated)) by Computer\r\n| where DownTime > 15\r\n| project LastSeen, DownTime, Computer",
+                "queryFrequency": "PT15M",
+                "queryPeriod": "PT15M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1489"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT6H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": [
+                    {
+                        "columnName": "LastSeen"
+                    }
+                ],
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b9d43bc1-c669-47eb-8482-80c0fc14b81d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b9d43bc1-c669-47eb-8482-80c0fc14b81d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-333 - FW - Traffic peak - Possible DDoS detected",
+                "description": "FW - Traffic peak - Possible DDoS detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "CommonSecurityLog\r\n| where DeviceProduct == \"Fortigate\"\r\n| where DeviceAction == \"allow\"\r\n| summarize Evntcount=count() by DestinationIP\r\n| where Evntcount >= 5000",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1498"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1c744b95-7f4c-4acd-a954-071072f4b8eb')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1c744b95-7f4c-4acd-a954-071072f4b8eb')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-RE-1536 - FW - Log4j IOC detection",
+                "description": "FW - Log4j IOC detection",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let referenceIPs = dynamic([\"45.155.205.233\", \"171.25.193.78\", \"51.15.43.205\", \"171.25.193.77\", \"185.220.101.141\", \"185.220.100.252\", \"185.220.100.246\", \"171.25.193.20\", \"185.220.100.255\", \"204.8.156.142\", \"185.220.100.253\", \"46.182.21.248\", \"81.17.18.60\", \"104.244.72.115\", \"18.27.197.252\", \"185.220.101.149\", \"171.25.193.25\", \"185.220.101.185\", \"45.12.134.108\", \"46.166.139.111\", \"185.220.101.157\", \"185.220.100.243\", \"107.189.12.135\", \"23.129.64.131\", \"104.244.74.57\", \"185.220.101.143\", \"195.176.3.24\", \"185.220.101.147\", \"185.220.101.43\", \"185.220.101.153\", \"199.195.250.77\", \"185.220.101.35\", \"185.107.47.215\", \"185.38.175.132\", \"185.220.100.242\", \"185.220.101.142\", \"185.220.101.172\", \"185.220.101.49\", \"185.220.101.129\", \"185.220.101.182\", \"185.220.100.245\", \"185.220.101.54\", \"185.220.101.34\", \"185.220.101.61\", \"185.220.101.167\", \"107.189.1.178\", \"185.220.101.179\", \"185.220.100.249\", \"185.220.101.33\", \"209.141.41.103\", \"185.220.101.32\", \"185.220.101.158\", \"185.220.101.46\", \"193.218.118.231\", \"185.220.101.169\", \"185.220.101.156\", \"193.31.24.154\", \"185.220.101.163\", \"209.127.17.242\", \"185.220.101.177\", \"185.220.100.248\", \"62.102.148.69\", \"185.220.101.45\", \"185.220.101.55\", \"185.220.100.244\", \"185.220.101.161\", \"23.129.64.141\", \"23.129.64.148\", \"185.220.100.254\", \"107.189.1.160\", \"185.220.101.168\", \"205.185.117.149\", \"185.107.47.171\", \"185.220.100.247\", \"185.220.101.189\", \"185.220.100.240\", \"23.129.64.146\", \"185.220.101.139\", \"185.220.101.36\", \"185.220.101.148\", \"185.220.101.175\", \"185.220.101.138\"]);\r\nCommonSecurityLog\r\n| where DeviceAction != \"blocked\"\r\n| where SourceIP in (referenceIPs) or DestinationIP in (referenceIPs)\r\n| summarize evtcount=count(), StartTime=min(TimeGenerated), EndTime=max(TimeGenerated) by SourceIP, DestinationIP, DeviceAction",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Reconnaissance"
+                ],
+                "techniques": [
+                    "T1595"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

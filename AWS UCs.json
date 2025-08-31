@@ -1,0 +1,2822 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bf74a128-cffc-4ad3-83c6-bbcc38b2dd0a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bf74a128-cffc-4ad3-83c6-bbcc38b2dd0a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA -1188 - AWS - AWS Cloud: Multiple Console Login Failures from Different Source IPs for Same Username",
+                "description": "Multiple Console Login Failures from Different Source IPs for Same Username.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName == \"ConsoleLogin\"\r\n| extend Login_Status = tostring(parse_json(ResponseElements).ConsoleLogin)\r\n| where Login_Status in ('Failure', 'Failedauthentication')\r\n| summarize FailedAttempts = count(), IPs = make_set(SourceIpAddress) by UserIdentityPrincipalid, bin(TimeGenerated, 1h)\r\n| where FailedAttempts > 1 and array_length(IPs) > 1\r\n| project TimeGenerated, UserIdentityPrincipalid, FailedAttempts, IPs",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess",
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1110",
+                    "T0859",
+                    "T1078"
+                ],
+                "subTechniques": [
+                    "T1110.001",
+                    "T1110.003",
+                    "T1078.004"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [
+                            "DisplayName"
+                        ],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/62e2cc6d-80d0-4255-be20-8ddbe846b693')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/62e2cc6d-80d0-4255-be20-8ddbe846b693')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1340 - AWS - EC2 Flow Log Deletion",
+                "description": "AWS EC2 Flow Log Deletion is the process of removing one or more flow logs from your Amazon EC2 instances. Flow logs are records of the IP traffic going to and from network interfaces in your VPC. They can help you monitor and troubleshoot network activity, as well as enhance security and compliance.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n  | where EventName contains \"DeleteFlowLogs\"\r\n  | summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated) by EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent,\r\n  UserIdentityUserName, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, EventSource\r\n  | extend timestamp = StartTimeUtc, AccountCustomEntity = UserIdentityUserName, IPCustomEntity = SourceIpAddress",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1562"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bb21591c-7c69-421f-8598-a588c72fc377')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bb21591c-7c69-421f-8598-a588c72fc377')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM.DE-1346 - AWS - CloudWatch Log Group Deletion",
+                "description": "CloudWatch Log Group Deletion",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"DeleteLogGroup\"\r\n| extend Affected_GroupName = tostring(parse_json(RequestParameters).logGroupName)\r\n| project\r\n    TimeGenerated,\r\n    EventName,\r\n    UserIdentityPrincipalid,\r\n    Affected_GroupName,\r\n    UserIdentityAccessKeyId,\r\n    SessionCreationDate,\r\n    SessionIssuerPrincipalId,\r\n    SessionIssuerUserName,\r\n    UserAgent",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact",
+                    "DefenseEvasion",
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T0872",
+                    "T1070",
+                    "T1562",
+                    "T1485",
+                    "T0859"
+                ],
+                "subTechniques": [
+                    "T1070.004",
+                    "T1562.008"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7c4b80e0-339c-4d87-b60b-76db76a1e3cd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7c4b80e0-339c-4d87-b60b-76db76a1e3cd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Changes to AWS Elastic Load Balancer security groups",
+                "description": "Elastic Load Balancer distributes incoming traffic across multiple instances in multiple availability Zones. This increases the fault tolerance of your applications.\n Unwanted changes to Elastic Load Balancer specific security groups could open your environment to attack and  hence needs monitoring.\n More information: https://medium.com/@GorillaStack/the-most-important-aws-cloudtrail-security-events-to-track-a5b9873f8255\n and https://aws.amazon.com/elasticloadbalancing/.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let elasticloadbalancinglist = (_GetWatchlist('Elasticload_Balancing') | project SearchKey);\nlet EventNameList = dynamic([\"ApplySecurityGroupsToLoadBalancer\", \"SetSecurityGroups\"]);\nAWSCloudTrail\n| where EventName in~ (EventNameList)\n| extend User = iif(isnotempty(UserIdentityUserName), UserIdentityUserName, SessionIssuerUserName)\n| summarize EventCount=count(), StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated)\nby EventSource, EventName, UserIdentityType, User, SourceIpAddress, UserAgent, SessionMfaAuthenticated, AWSRegion,\nAdditionalEventData, UserIdentityAccountId, UserIdentityPrincipalid, ResponseElements\n| extend timestamp = StartTimeUtc, AccountCustomEntity = User , IPCustomEntity = SourceIpAddress\n | where SourceIpAddress  !in (elasticloadbalancinglist )",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "c7bfadd4-34a6-4fa5-82f8-3691a32261e8",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.1"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/54376356-46d5-49e1-8fc8-8c4cdc085cd9')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/54376356-46d5-49e1-8fc8-8c4cdc085cd9')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-1176 - AWS - AWS Cloud: A Signing Certificate Has Been Removed",
+                "description": "A signing certificate has been removed is an error message that indicates that the certificate used to sign an application or a document has either expired or has been revoked by the issuer. A certificate is a digital credential that verifies the identity and authenticity of the sender or receiver of information. A certificate can be revoked by the issuer for various reasons, such as the compromise of the private key, the change of the certificate to a new one, or the violation of the certificate policy",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\n| where EventName contains \"DeleteCertificate\"\n| extend certificate_ARN = tostring(parse_json(RequestParameters).certificateArn)\n| extend User = split(UserIdentityPrincipalid, \":\")[1]\n| where User != \"GitHubActionSession\"\n| where (User != \"anwar.hassen@capgemini.com\" and UserIdentityAccountId != \"070978211414\" and SourceIpAddress !in ('87.95.44.44', '62.78.157.135')) //legit user\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "UserAgent"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/899b4286-5478-4b0c-bbb2-5fec589ee0a7')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/899b4286-5478-4b0c-bbb2-5fec589ee0a7')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty S3/Bucket Block Public Access Disabled.",
+                "description": "This finding informs you that Block Public Access was disabled for the listed S3 bucket. When enabled, S3 Block Public Access settings are used to filter the policies or access control lists (ACLs) applied to buckets as a security measure to prevent inadvertent public exposure of data.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType has \"Policy:S3/BucketBlockPublicAccessDisabled\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend arn = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].arn)\r\n| extend effectivePermission_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend AWSS3Bucket = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).affectedResources)).[\"AWS::S3::Bucket\"])\r\n| extend callerType = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).callerType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend serviceName = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).serviceName)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeCreated,ActivityType,accessKeyId,principalId,userName,Arn,actionType,AWSS3Bucket,callerType,ipAddressV4,serviceName,eventFirstSeen,eventLastSeen,Title,Description",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c1ef5589-7367-4bab-a6cc-c350b7f0ea94')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c1ef5589-7367-4bab-a6cc-c350b7f0ea94')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Changes to AWS Security Group ingress and egress settings",
+                "description": "A Security Group acts as a virtual firewall of an instance to control inbound and outbound traffic.\n Hence, ingress and egress settings changes to AWS Security Group should be monitored as these can expose the enviornment to new attack vectors.\nMore information: https://medium.com/@GorillaStack/the-most-important-aws-cloudtrail-security-events-to-track-a5b9873f8255.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let EventNameList = dynamic([ \"AuthorizeSecurityGroupEgress\", \"AuthorizeSecurityGroupIngress\", \"RevokeSecurityGroupEgress\", \"RevokeSecurityGroupIngress\"]);\nAWSCloudTrail\n| where EventName in~ (EventNameList)\n| extend User = iif(isnotempty(UserIdentityUserName), UserIdentityUserName, SessionIssuerUserName)\n| summarize EventCount=count(), StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated)\nby EventSource, EventName, UserIdentityType, User, SourceIpAddress, UserAgent, SessionMfaAuthenticated, AWSRegion,\nAdditionalEventData, UserIdentityAccountId, UserIdentityPrincipalid, ResponseElements\n| extend timestamp = StartTimeUtc, AccountCustomEntity = User , IPCustomEntity = SourceIpAddress\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "4f19d4e3-ec5f-4abc-9e61-819eb131758c",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.1"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/152da399-06d7-4064-af38-f1b079e2dd99')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/152da399-06d7-4064-af38-f1b079e2dd99')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty Discovered resources was invoked in an anomalous way",
+                "description": "This finding informs you that an anomalous API request was observed in your account. This finding may include a single API or a series of related API requests made in proximity by a single user identity. The API observed is commonly associated with the discovery stage of an attack when an adversary is gathering information to determine if your AWS environment is susceptible to a broader attack. APIs in this category are typically get, describe, or list operations, such as, DescribeInstances, GetRolePolicy, or ListAccessKeys.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"Discovery:IAMUser/AnomalousBehavior\"\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend AccessKeyID_=tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\r\n| extend instanceId_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend instanceType_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceType)\r\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\r\n| extend ipAddressV4_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n|project TimeGenerated,ActivityType,Title,Description,userName_,principalId_,AccessKeyID_,AccountId,anomalousAPIs_,ipAddressV4_,fullUserAgent_,eventFirstSeen_,eventLastSeen_,Region\r\n|where principalId_ !contains \"syed.g.ali@capgemini.com\"\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e8dfeb53-9b5e-4cd2-91e6-6072841853f2')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e8dfeb53-9b5e-4cd2-91e6-6072841853f2')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GurdDUty An Amazon EC2 instance is communicating with an unusual public DNS resolver",
+                "description": "This finding informs you that the listed Amazon EC2 instance in your AWS environment is behaving in a way that deviates from the baseline behavior. This EC2 instance has no recent history of communicating with this public DNS resolver. The Unusual field in the finding details panel in the GuardDuty console can provide information about the queried DNS resolver.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"DefenseEvasion:EC2/UnusualDNSResolver\"\r\n| extend id_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).id)\r\n| extend arn = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).arn)\r\n| extend imageDescription = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageDescription)\r\n| extend imageId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageId)\r\n| extend instanceId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend privateDnsName = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateDnsName)\r\n| extend privateIpAddress = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateIpAddress)\r\n| extend subnetId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].subnetId)\r\n| extend vpcId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].vpcId)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend port = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).localPortDetails)).port)\r\n| extend protocol = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).protocol)\r\n| extend RemoteIpAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remoteIpDetails)).ipAddressV4)\r\n| extend RemotePort = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remotePortDetails)).port)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n| extend inBytes_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).inBytes)\r\n| extend outBytes_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).outBytes)\r\n| extend type_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).type)\r\n| extend unusual_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusual)\r\n| extend SecuritygroupId = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].securityGroups))[0].groupId)\r\n| extend SecurityGroupName_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].securityGroups))[0].groupName)\r\n|project TimeGenerated,AccountId,Region,Id,Arn,ActivityType,Title,Description,imageDescription,inBytes_,outBytes_,type_,unusual_,SecuritygroupId,SecurityGroupName_,instanceId,privateDnsName,privateIpAddress,subnetId,vpcId,actionType,port,protocol,RemoteIpAddressV4,RemotePort,eventFirstSeen,ServiceDetails,ResourceDetails\r\n\r\n",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "RemoteIpAddressV4"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "instanceId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e1a15275-2b19-4ccc-a1df-80058706a96e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e1a15275-2b19-4ccc-a1df-80058706a96e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWSGuardDuty events not flowing into sentinel_EAF",
+                "description": "Amazon Web Services S3 Logs Connector is down. Also Verify also Verify the last Log for AWSGuardDuty( Please contact SPOC immediately.",
+                "severity": "High",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n| summarize LastHeartbeat = max(TimeGenerated)\r\n| extend State = iff(LastHeartbeat < ago(10h), 'Unhealthy', 'Healthy')\r\n| where State == 'Unhealthy'\r\n| extend TimeFromNow = now() - LastHeartbeat\r\n| extend [\"LastLog\"] = strcat('🕒 ',(strcat(case(TimeFromNow < 1m, strcat(toint(TimeFromNow / 1m), ' seconds'), TimeFromNow < 1h, strcat(toint(TimeFromNow / 1m), ' minutes'), TimeFromNow < 1d, strcat(toint(TimeFromNow / 1h), ' hours'), strcat(toint(TimeFromNow / 1d), ' days')), ' ago')))\r\n| extend Description = \"Amazon Web Services S3 Logs Connector is down. Also Verify also Verify the last Log for AWSGuardDuty( Please contact SPOC immidiately!!)\"\r\n| project LastLog, LastHeartbeat, Description",
+                "queryFrequency": "PT10H",
+                "queryPeriod": "PT10H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c060b3d5-3af5-4e42-a258-05aff73dcc57')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c060b3d5-3af5-4e42-a258-05aff73dcc57')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1186 - AWS - AWS Cloud: Logs Have Been Deleted / Disabled or Stopped",
+                "description": "AWS Cloud: Logs Have Been Deleted / Disabled or Stopped",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n|where EventName has_any ('DeleteTrail','DisableLogging','StopLogging','DeleteFlowLogs')\r\n|project TimeGenerated,EventName,UserIdentityAccountId,SessionCreationDate,SessionIssuerUserName,SourceIpAddress, OperationName, UserIdentityUserName, ClientProvidedHostHeader",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1564",
+                    "T1628"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4be62514-4808-4adf-a7e9-949421442c14')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4be62514-4808-4adf-a7e9-949421442c14')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS - AWS Cloud: Multiple Console Login Failures from Same Source IP",
+                "description": "Multiple Console Login Failures from Same Source IP",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName has_any ('ConsoleLogin')\r\n| extend Login_Status = tostring(parse_json(ResponseElements).ConsoleLogin)\r\n| where Login_Status in ('Failure', 'Failed authentication')\r\n| summarize eventcount= count()\r\n    by\r\n    UserIdentityPrincipalid,\r\n    SourceIpAddress,\r\n    UserIdentityArn,\r\n    SessionIssuerUserName,\r\n    UserAgent,\r\n    ResponseElements,\r\n    AdditionalEventData,\r\n    ClientProvidedHostHeader,UserIdentityAccountId,UserIdentityUserName\r\n| where eventcount >= 5",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/376d1c7b-14ae-4d8b-a0fd-16440298ccd5')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/376d1c7b-14ae-4d8b-a0fd-16440298ccd5')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM -1175 - AWS - AWS Cloud: Multiple accounts deleted",
+                "description": "AWS - AWS Cloud: Multiple users deleted.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"DeleteUser\"\r\n| summarize Evntcount=count() by UserIdentityPrincipalid, bin(TimeGenerated, 10m), SourceIpAddress, AWSRegion, AwsEventId\r\n| where Evntcount == 6\r\n| project\r\n    TimeGenerated,\r\n    UserIdentityPrincipalid,\r\n    Evntcount,\r\n    SourceIpAddress,\r\n    AWSRegion,\r\n    AwsEventId",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c7631054-062f-4a09-8b0c-2657e24f18a6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c7631054-062f-4a09-8b0c-2657e24f18a6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Changes made to AWS CloudTrail logs",
+                "description": "Attackers often try to hide their steps by deleting or stopping the collection of logs that could show their activity.\nThis alert identifies any manipulation of AWS CloudTrail, Cloudwatch/EventBridge or VPC Flow logs.\nMore Information: AWS CloudTrail API: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_Operations.html\nAWS Cloudwatch/Eventbridge API: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_Operations.html\nAWS DelteteFlowLogs API : https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DeleteFlowLogs.html ",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let EventNameList = dynamic([\"UpdateTrail\",\"DeleteTrail\",\"StopLogging\",\"DeleteFlowLogs\",\"DeleteEventBus\"]);\nAWSCloudTrail\n| where EventName in~ (EventNameList)\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated) by EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent,\nUserIdentityUserName, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, EventSource\n| extend timestamp = StartTimeUtc, AccountCustomEntity = UserIdentityUserName, IPCustomEntity = SourceIpAddress\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": "610d3850-c26f-4f20-8d86-f10fdf2425f5",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.1"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0f7cbebe-68c2-473f-9dc2-a4da021f8bf6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0f7cbebe-68c2-473f-9dc2-a4da021f8bf6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Changes to internet facing AWS RDS Database instances",
+                "description": "Amazon Relational Database Service (RDS) is scalable relational database in the cloud.\nIf your organization have one or more AWS RDS Databases running, monitoring changes to especially internet facing AWS RDS (Relational Database Service)\nOnce alerts triggered, validate if changes observed are authorized and adhere to change control policy.\nMore information: https://medium.com/@GorillaStack/the-most-important-aws-cloudtrail-security-events-to-track-a5b9873f8255\nand RDS API Reference Docs: https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_Operations.html",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let EventNameList = dynamic([\"AuthorizeDBSecurityGroupIngress\",\"CreateDBSecurityGroup\",\"DeleteDBSecurityGroup\",\"RevokeDBSecurityGroupIngress\"]);\nAWSCloudTrail\n| where EventName in~ (EventNameList)\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated) by EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent, UserIdentityUserName, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, EventSource, AdditionalEventData, ResponseElements\n| extend timestamp = StartTimeUtc, AccountCustomEntity = UserIdentityUserName, IPCustomEntity = SourceIpAddress\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "8c2ef238-67a0-497d-b1dd-5c8a0f533e25",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.1"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/38f9f627-b73d-4493-a69c-762ee5dafd7d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/38f9f627-b73d-4493-a69c-762ee5dafd7d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWSCloudTrail events not flowing into sentinel_EAF",
+                "description": "Amazon Web Services S3 Logs Connector is down. Also Verify also Verify the last Log for AWSCloudTrail( Please contact SPOC immidiately.",
+                "severity": "High",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| summarize LastHeartbeat = max(TimeGenerated)\r\n| extend State = iff(LastHeartbeat < ago(30m), 'Unhealthy', 'Healthy')\r\n| where State == 'Unhealthy'\r\n| extend TimeFromNow = now() - LastHeartbeat\r\n| extend [\"LastLog\"] = strcat('🕒 ',(strcat(case(TimeFromNow < 1m, strcat(toint(TimeFromNow / 1m), ' seconds'), TimeFromNow < 1h, strcat(toint(TimeFromNow / 1m), ' minutes'), TimeFromNow < 1d, strcat(toint(TimeFromNow / 1h), ' hours'), strcat(toint(TimeFromNow / 1d), ' days')), ' ago')))\r\n| extend Description = \"Amazon Web Services S3 Logs Connector is down. Also Verify also Verify the last Log for AWSCloudTrail( Please contact SPOC immidiately!!)\"\r\n| project LastLog, LastHeartbeat, Description",
+                "queryFrequency": "PT30M",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8da428e5-9b37-44eb-8663-ff6640d63759')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8da428e5-9b37-44eb-8663-ff6640d63759')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Login to AWS Management Console without MFA",
+                "description": "Multi-Factor Authentication (MFA) helps you to prevent credential compromise. This alert identifies logins to the AWS Management Console without MFA.\nYou can limit this detection to trigger for adminsitrative accounts if you do not have MFA enabled on all accounts.\nThis is done by looking at the eventName ConsoleLogin and if the AdditionalEventData field indicates MFA was NOT used\nand the ResponseElements field indicates NOT a Failure. Thereby indicating that a non-MFA login was successful.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "AWSCloudTrail\n| where EventName =~ \"ConsoleLogin\"\n| extend MFAUsed = tostring(parse_json(AdditionalEventData).MFAUsed), LoginResult = tostring(parse_json(ResponseElements).ConsoleLogin), indexId = indexof(tostring(UserIdentityPrincipalid),\":\")\n| where MFAUsed !~ \"Yes\" and LoginResult !~ \"Failure\"\n| where SessionIssuerUserName !contains \"AWSReservedSSO\"\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated) by EventName, EventTypeName, LoginResult, MFAUsed, UserIdentityAccountId,  UserIdentityPrincipalid, UserAgent,\nUserIdentityUserName, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, indexId\n| extend timestamp = StartTimeUtc, AccountCustomEntity = iif(isempty(UserIdentityUserName),substring(UserIdentityPrincipalid, toint(indexId)+1), UserIdentityUserName), IPCustomEntity = SourceIpAddress\n",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion",
+                    "PrivilegeEscalation",
+                    "Persistence",
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T1078"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "d25b1998-a592-4bc5-8a3a-92b39eedb1bc",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.3"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/026db9fb-7e59-4a1f-87ce-71b836bff607')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/026db9fb-7e59-4a1f-87ce-71b836bff607')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-1205 - AWS - AWS Cloud: User added to a Group with Admin Role Capability_EAF",
+                "description": "User added to a Group with Admin Role Capability in AWS is a way of granting administrative permissions to a user by assigning them to a user group that has the Administrator Access policy attached.",
+                "severity": "High",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"AddMemberToGroup\"\r\n| extend ID = tostring(parse_json(RequestParameters).groupId)\r\n| where ID in ('03c4d8a2-b001-7099-a9a4-1383993f9994', '035418c2-20a1-7062-75c1-81a38110d291', '43d4f862-3071-7075-ef40-be52fa064695', '2354f8c2-90d1-70e8-69e1-5cb8b97b79f3', '936498b2-c001-7010-9af0-d13ef7f5d294', '13843842-8061-7079-ebb5-ec685514e37a', 'f3643812-e0e1-704e-ae88-3a8b6dbe850f')\r\n| project\r\n    TimeGenerated, SessionIssuerUserName,\r\n    EventSource,\r\n    EventName,\r\n    UserIdentityPrincipalid,\r\n    SessionCreationDate,\r\n    SourceIpAddress,\r\n    UserAgent,\r\n    RequestParameters",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "SessionIssuerUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e16f91f1-8ce2-488a-85cf-4a43d5b8777c')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e16f91f1-8ce2-488a-85cf-4a43d5b8777c')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty Anomalous API request was observed in your account",
+                "description": "This finding informs you that an anomalous API request was observed in your account. This finding may include a single API or a series of related API requests made in proximity by a single user identity. The API observed is commonly associated with impact tactics where an adversary is trying to disrupt operations and manipulate, interrupt, or destroy data in your account.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType has \"Impact:IAMUser/AnomalousBehavior\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName= tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend userType = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userType)\r\n| extend S3Bucketname = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].name)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend anomalousAPIs = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend userAgentCategory = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).userAgentCategory)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeCreated,ActivityType,Title,Description,accessKeyId,principalId,userName,userType,S3Bucketname,actionType,ipAddressV4,anomalousAPIs,fullUserAgent,userAgentCategory,eventFirstSeen,eventLastSeen,AccountId,Id,Arn,ServiceDetails,ResourceDetails",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/489d8862-8896-4f4a-9c7f-fd5d22035943')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/489d8862-8896-4f4a-9c7f-fd5d22035943')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty Persistence Anomalous Behaviour observed for IAM User",
+                "description": "An API commonly used to maintain unauthorized access to an AWS environment was invoked in an anomalous way. This finding informs you that an anomalous API request was observed in your account.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"Persistence:IAMUser/AnomalousBehavior\"\r\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend accessKeyId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend ipAddressV4_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\r\n| extend unusualAPIsAccountProfiling_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualAPIsAccountProfiling)\r\n| extend unusualUserNamesAccountProfiling_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualUserNamesAccountProfiling)\r\n|project TimeGenerated,ActivityType,Title,Description,userName_,principalId_,unusualAPIsAccountProfiling_,accessKeyId_,ipAddressV4_,anomalousAPIs_,fullUserAgent_,eventFirstSeen_,eventLastSeen_,Region\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId_"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "userName_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6b46b3d8-0e9c-467f-9746-d051243d7bbd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6b46b3d8-0e9c-467f-9746-d051243d7bbd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty PrivilegeEscalation AnomalousBehavior for IAMUser",
+                "description": "An API commonly used to obtain high-level permissions to an AWS environment was invoked in an anomalous way. This API request was identified as anomalous by GuardDuty's anomaly detection machine learning (ML) model.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"PrivilegeEscalation/AnomalousBehavior\"\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend AccessKeyID_=tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\r\n| extend instanceId_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend instanceType_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceType)\r\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeGenerated,ActivityType,instanceId_,instanceType_,Title,Description,userName_,principalId_,AccessKeyID_,anomalousAPIs_,fullUserAgent_,eventFirstSeen_,eventLastSeen_,Region\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "userName_"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/952fc195-2e2a-4417-be41-b965f36c2dcd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/952fc195-2e2a-4417-be41-b965f36c2dcd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS - AWS Cloud: An EC2 Instance Has Been Created with Large Specifications",
+                "description": "An EC2 Instance Has Been Created with Large Specifications. and An Amazon EC2 instance is essentially a virtual server within Amazon’s (EC2)Elastic Compute Cloud.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n|where EventName == \"RunInstances\" or EventName == \"CreateInstance\"\r\n|extend instanceType = tostring(parse_json(tostring(parse_json(tostring(parse_json(ResponseElements).instancesSet)).items))[0].instanceType)\r\n|extend instanceId = tostring(parse_json(tostring(parse_json(tostring(parse_json(ResponseElements).instancesSet)).items))[0].instanceId)\r\n|extend vpcId = tostring(parse_json(tostring(parse_json(tostring(parse_json(ResponseElements).instancesSet)).items))[0].vpcId)\r\n|extend groupName = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(parse_json(ResponseElements).instancesSet)).items))[0].groupSet)).items))[0].groupName)\r\n|where instanceType has_any ('m5.4xlarge','m5.12xlarge','m5.24xlarge','m4.4xlarge','m4.10xlarge','m4.16xlarge','c5d.4xlarge','c5d.9xlarge','c5d.18xlarge')\r\n|project TimeGenerated,instanceType,groupName,instanceId,vpcId,AwsEventId,EventSource,EventName,UserIdentityPrincipalid,SourceIpAddress,UserIdentityArn,SessionIssuerUserName,AWSRegion",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4c4a806d-3d80-4d5f-812f-9b01d49abeca')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4c4a806d-3d80-4d5f-812f-9b01d49abeca')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty Privilege Escalation Anomalous Behavior for IAM User",
+                "description": "An API commonly used to obtain high-level permissions to an AWS environment was invoked in an anomalous way\n\nThis finding informs you that an anomalous API request was observed in your account. This finding may include a single API or a series of related API requests made in proximity by a single user identity. The API observed is commonly associated with privilege escalation tactics where an adversary is attempting to gain higher-level permissions to an environment. APIs in this category typically involve operations that change IAM policies, roles, and users, such as, AssociateIamInstanceProfile, AddUserToGroup, or PutUserPolicy.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n| where ActivityType has \"PrivilegeEscalation:IAMUser/AnomalousBehavior\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend api = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).api)\r\n| extend callerType = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).callerType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend anomalousAPIs = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend userAgentCategory = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).userAgentCategory)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeGenerated,accessKeyId,principalId,userName,actionType,api,callerType,ipAddressV4,anomalousAPIs,fullUserAgent,userAgentCategory,eventFirstSeen,eventLastSeen,Title,Description\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/87dd48c1-a044-43b3-bc37-f1dba0c0a239')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/87dd48c1-a044-43b3-bc37-f1dba0c0a239')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An IAM entity invoked an S3 API in a suspicious way.",
+                "description": "This finding informs you that an IAM entity is making API calls that involve an S3 bucket and this activity differs from that entity's established baseline. The API call used in this activity is associated with the exfiltration stage of an attack, wherein an attacker attempts to collect data.\n\nExfiltration:S3/AnomalousBehavior",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n| where ActivityType has \"Exfiltration:S3/AnomalousBehavior\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend resourceType = tostring(ResourceDetails.resourceType)\r\n| extend arn = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].arn)\r\n| extend createdAt = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].createdAt)\r\n| extend S3Bucketname = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].name)\r\n| extend effectivePermission = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend effectivePermission_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend AWSApiAction = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).api)\r\n| extend domain = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).domainDetails)).domain)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeCreated,principalId,userName,resourceType,arn,createdAt,S3Bucketname,effectivePermission,actionType,AWSApiAction,domain,ResourceDetails,Title,Description,eventFirstSeen,eventLastSeen",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Exfiltration"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/21692a8d-7db8-493a-845d-26f874d41cc7')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/21692a8d-7db8-493a-845d-26f874d41cc7')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GaurdDuty A workload was launched in an anomalous way",
+                "description": "This finding informs you that a Kubernetes workload was created or modified in an anomalous way, such as an API activity, new container images, or risky workload configuration, within your Amazon EKS cluster. Unauthorized users can launch containers as a tactic to execute arbitrary code to first gain access to the host and then compromise it.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType has \"Execution:Kubernetes/AnomalousBehavior.WorkloadDeployed\"\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n| extend EKSClusterName = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).name)\r\n| extend value = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).tags))[3].value)\r\n| extend vpcId = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).vpcId)\r\n| extend arn = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).arn)\r\n| extend id = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).id)\r\n| extend launchTime = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).launchTime)\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)))\r\n| extend createdAt = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).createdAt)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend requestUri = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).requestUri)\r\n| extend userAgent = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).userAgent)\r\n|project TimeGenerated,ActivityType,Title,Description,value,vpcId,Arn,Id,EKSClusterName,accessKeyId,principalId,userName,createdAt,actionType,requestUri,userAgent,eventFirstSeen,eventLastSeen,Region,ResourceDetails,ServiceDetails",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence",
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6b9b0531-cd80-419f-aed8-10c38d9de086')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6b9b0531-cd80-419f-aed8-10c38d9de086')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty PrivilegeEscalation RoleBindingCreated in Kubernetes cluster",
+                "description": "This finding informs you that a user in your Kubernetes cluster created a RoleBinding or ClusterRoleBinding to bind a user to a role with admin permissions or sensitive namespaces. If this behavior is not expected, it may indicate either a configuration mistake or that your AWS credentials are compromised.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"PrivilegeEscalation:Kubernetes/AnomalousBehavior.RoleBindingCreated\"\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend fullUserAgent_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend createdAt_ = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).createdAt)\r\n| extend ResourceName = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).name)\r\n| extend vpcId_ = tostring(parse_json(tostring(ResourceDetails.eksClusterDetails)).vpcId)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend ipAddressV4_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend requestUri_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).requestUri)\r\n| extend resource_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).resource)\r\n| extend resourceName_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).kubernetesApiCallAction)).resourceName)\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend AccessKeyID_=tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\r\n| extend instanceId_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend instanceType_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceType)\r\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeGenerated,ActivityType,Title,Description,userName_,ipAddressV4_,createdAt_,ResourceName,vpcId_,principalId_,AccessKeyID_,AccountId,eventFirstSeen_,eventLastSeen_,Region\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "userName_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/cb767205-257d-43f3-bcfa-599ecf7a3431')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/cb767205-257d-43f3-bcfa-599ecf7a3431')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty InitialAccess Anomalous Behaviour observed for IAM User",
+                "description": "This UC is built to Detect Where IAM user has gained access to the system and is displaying behavior that is out of the ordinary, which could be a sign of a security breach or other malicious activity.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"InitialAccess:IAMUser/AnomalousBehavior\"\r\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend accessKeyId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend ipAddressV4_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend anomalousAPIs_ = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeGenerated,ActivityType,Title,Description,userName_,principalId_,accessKeyId_,anomalousAPIs_,fullUserAgent_,eventFirstSeen_,eventLastSeen_,Region",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "userName_"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7b66034b-6854-4508-81a5-8c569d83b33d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7b66034b-6854-4508-81a5-8c569d83b33d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty IAM entity invoked an S3 API that attempts to delete data in a suspicious way",
+                "description": "This finding informs you that an IAM entity in your AWS environment is making API calls that involve an S3 bucket, and this behavior differs from that entity's established baseline. The API call used in this activity is associated with an attack that attempts to delete data.\n\nImpact:S3/AnomalousBehavior.Delete",
+                "severity": "High",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n| where ActivityType has \"Impact:S3/AnomalousBehavior.Delete\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend resourceType = tostring(ResourceDetails.resourceType)\r\n| extend arn = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].arn)\r\n| extend createdAt = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].createdAt)\r\n| extend S3Bucketname = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].name)\r\n| extend effectivePermission = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend effectivePermission_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend AffectedAWS__S3__Bucket = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).affectedResources)).[\"AWS::S3::Bucket\"])\r\n| extend AWSApiAction = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).api)\r\n| extend domain = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).domainDetails)).domain)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeCreated,principalId,userName,resourceType,arn,createdAt,S3Bucketname,effectivePermission,actionType,AffectedAWS__S3__Bucket,AWSApiAction,domain,ResourceDetails,Title,Description,eventFirstSeen,eventLastSeen",
+                "queryFrequency": "PT30M",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3c0dc575-e120-400c-bb9d-a87cf1b5f45f')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3c0dc575-e120-400c-bb9d-a87cf1b5f45f')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An API used to evade defensive measures was invoked in an anomalous way.",
+                "description": "This finding informs you that an anomalous API request was observed in your account. This finding may include a single API or a series of related API requests made in proximity by a single user identity. The API observed is commonly associated with defense evasion tactics where an adversary is trying to cover their tracks and avoid detection. APIs in this category are typically delete, disable, or stop operations, such as, DeleteFlowLogs, DisableAlarmActions, or StopLogging.\n\nDefenseEvasion:IAMUser/AnomalousBehavior",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\n| where ActivityType has \"DefenseEvasion:IAMUser/AnomalousBehavior\"\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\n| extend unusualAPIsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualAPIsAccountProfiling)\n| extend unusualAPIsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualAPIsUserIdentityProfiling)\n| extend unusualASNsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualASNsAccountProfiling)\n| extend frequentProfiledAPIsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).frequentProfiledAPIsAccountProfiling)\n| extend frequentProfiledUserNamesAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).frequentProfiledUserNamesAccountProfiling)\n| extend rareProfiledAPIsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).rareProfiledAPIsUserIdentityProfiling)\n| extend rareProfiledUserAgentsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).rareProfiledUserAgentsUserIdentityProfiling)\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\n| project\n    TimeCreated,\n    principalId,\n    accessKeyId,\n    userName,\n    ipAddressV4,\n    actionType,\n    unusualAPIsAccountProfiling,\n    unusualAPIsUserIdentityProfiling,\n    frequentProfiledAPIsAccountProfiling,\n    frequentProfiledUserNamesAccountProfiling,\n    rareProfiledAPIsUserIdentityProfiling,\n    rareProfiledUserAgentsUserIdentityProfiling,\n    eventFirstSeen,\n    eventLastSeen,\n    Title,\n    Description\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e11c1be3-7b73-46a1-94e1-976c6762a3d8')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e11c1be3-7b73-46a1-94e1-976c6762a3d8')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An API commonly used to collect data from an AWS environment was invoked in an anomalous way",
+                "description": "This finding informs you that an anomalous API request was observed in your account. This finding may include a single API or a series of related API requests made in proximity by a single user identity. The API observed is commonly associated with exfiltration tactics where an adversary is trying to collect data from your network using packaging and encryption to avoid detection. APIs for this finding type are management (control-plane) operations only and are typically related to S3, snapshots, and databases, such as, PutBucketReplication, CreateSnapshot, or RestoreDBInstanceFromDBSnapshot.\nExfiltration:IAMUser/AnomalousBehavior",
+                "severity": "High",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n| where ActivityType has \"Exfiltration:IAMUser/AnomalousBehavior\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend unusualAPIsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualAPIsAccountProfiling)\r\n| extend unusualAPIsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualAPIsUserIdentityProfiling)\r\n| extend unusualASNsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusualBehavior)).unusualASNsAccountProfiling)\r\n| extend frequentProfiledAPIsAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).frequentProfiledAPIsAccountProfiling)\r\n| extend frequentProfiledUserNamesAccountProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).frequentProfiledUserNamesAccountProfiling)\r\n| extend rareProfiledAPIsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).rareProfiledAPIsUserIdentityProfiling)\r\n| extend rareProfiledUserAgentsUserIdentityProfiling = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).value)).profiledBehavior)).rareProfiledUserAgentsUserIdentityProfiling)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeCreated,principalId,accessKeyId,userName,ipAddressV4,actionType,unusualAPIsAccountProfiling,unusualAPIsUserIdentityProfiling,frequentProfiledAPIsAccountProfiling,frequentProfiledUserNamesAccountProfiling,rareProfiledAPIsUserIdentityProfiling,rareProfiledUserAgentsUserIdentityProfiling,eventFirstSeen,eventLastSeen,Title,Description\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT2H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Exfiltration"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c9bf5a4d-7229-4304-91b2-7c0f970f5be6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c9bf5a4d-7229-4304-91b2-7c0f970f5be6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An IAM entity invoked an S3 API that attempts to write data in a suspicious way.",
+                "description": "This finding informs you that an IAM entity in your AWS environment is making API calls that involve an S3 bucket, and this behavior differs from that entity's established baseline. The API call used in this activity is associated with an attack that attempts to write data. This activity is suspicious because the IAM entity invoked the API in an unusual way. For example, an IAM entity with no previous history invokes an S3 API, or an IAM entity invokes an S3 API from an unusual location.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType has \"Impact:S3/AnomalousBehavior.Write\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend arn = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].arn)\r\n| extend effectivePermission_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend AWSS3Bucket = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).affectedResources)).[\"AWS::S3::Bucket\"])\r\n| extend callerType = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).callerType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend serviceName = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).serviceName)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n| extend anomalousAPIs = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend resourceType = tostring(ResourceDetails.resourceType)\r\n|project TimeCreated,ActivityType,accessKeyId,principalId,userName,Arn,actionType,AWSS3Bucket,callerType,anomalousAPIs,serviceName,fullUserAgent,resourceType,eventFirstSeen,eventLastSeen,Title,Description",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/08ad5c0c-4fad-4737-a823-7dd123ec52f0')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/08ad5c0c-4fad-4737-a823-7dd123ec52f0')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An API commonly used to discover S3 objects was invoked in an unusual way.",
+                "description": "An IAM entity has invoked an S3 API to discover S3 buckets in your environment, such as ListBuckets. This type of activity is associated with the discovery stage of an attack wherein an attacker is gathering information to determine if your AWS environment is susceptible to a broader attack. This activity is suspicious because the way the IAM entity invoked the API was unusual. For example, this IAM entity had no prior history of invoking this type of API, or the API was invoked from an unusual location.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType has \"Discovery:S3/AnomalousBehavior\"\r\n| extend accessKeyId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\r\n| extend principalId = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\r\n| extend userName = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\r\n| extend arn = tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].arn)\r\n| extend effectivePermission_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.s3BucketDetails))[0].publicAccess)).effectivePermission)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend callerType = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).callerType)\r\n| extend ipAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\r\n| extend serviceName = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).serviceName)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n| extend anomalousAPIs = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).anomalies)).anomalousAPIs)\r\n| extend fullUserAgent = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.additionalInfo)).userAgent)).fullUserAgent)\r\n| extend resourceType = tostring(ResourceDetails.resourceType)\r\n| extend authenticationMethod = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).authenticationMethod)\r\n|project TimeCreated,ActivityType,accessKeyId,principalId,userName,Arn,actionType,callerType,anomalousAPIs,serviceName,fullUserAgent,resourceType,authenticationMethod,eventFirstSeen,eventLastSeen,Title,Description",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9fdd3006-f527-450e-a56b-1715223950c3')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9fdd3006-f527-450e-a56b-1715223950c3')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty IAM User/Instance Credential Exfiltration Inside AWS",
+                "description": "This finding informs you when your EC2 instance credentials are used to invoke APIs from an IP address that is owned by a different AWS account than the one that the associated EC2 instance is running in.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\n| where ActivityType has \"UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.InsideAWS\"\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\n| extend userName_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).userName)\n| extend principalId_ = tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).principalId)\n| extend AccessKeyID_=tostring(parse_json(tostring(ResourceDetails.accessKeyDetails)).accessKeyId)\n| extend eventFirstSeen_ = tostring(ServiceDetails.eventFirstSeen)\n| extend instanceId_ = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\n| extend eventLastSeen_ = tostring(ServiceDetails.eventLastSeen)\n| extend actionType_ = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\n| extend ipAddressV4_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).awsApiCallAction)).remoteIpDetails)).ipAddressV4)\n| project\n    TimeGenerated,\n    ActivityType,\n    instanceId_,\n    Title,\n    Description,\n    userName_,\n    principalId_,\n    ipAddressV4_,\n    AccessKeyID_,\n    eventFirstSeen_,\n    eventLastSeen_,\n    Region\n|where ipAddressV4_ !in~ (\"3.127.52.195\",\"34.198.108.36\",\"35.157.131.27\",\"54.197.106.16\") \n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Reconnaissance"
+                ],
+                "techniques": [
+                    "T1589",
+                    "T1590"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "userName_"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "principalId_"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "instanceId_"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/23234c02-270b-44fa-8770-5a362f347de1')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/23234c02-270b-44fa-8770-5a362f347de1')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty-An Amazon EC2 instance is communicating with an unusual public DNS resolver.",
+                "description": "This finding informs you that the listed Amazon EC2 instance in your AWS environment is behaving in a way that deviates from the baseline behavior. This EC2 instance has no recent history of communicating with this public DNS resolver. The Unusual field in the finding details panel in the GuardDuty console can provide information about the queried DNS resolver.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"DefenseEvasion:EC2/UnusualDNSResolver\"\r\n| extend id_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).id)\r\n| extend arn = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).arn)\r\n| extend imageDescription = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageDescription)\r\n| extend imageId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageId)\r\n| extend instanceId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend privateDnsName = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateDnsName)\r\n| extend privateIpAddress = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateIpAddress)\r\n| extend subnetId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].subnetId)\r\n| extend vpcId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].vpcId)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend port = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).localPortDetails)).port)\r\n| extend protocol = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).protocol)\r\n| extend RemoteIpAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remoteIpDetails)).ipAddressV4)\r\n| extend RemotePort = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remotePortDetails)).port)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n| extend inBytes_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).inBytes)\r\n| extend outBytes_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).outBytes)\r\n| extend type_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).type)\r\n| extend unusual_ = tostring(parse_json(tostring(ServiceDetails.additionalInfo)).unusual)\r\n| extend SecuritygroupId = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].securityGroups))[0].groupId)\r\n| extend SecurityGroupName_ = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].securityGroups))[0].groupName)\r\n|project TimeGenerated,AccountId,Region,Id,Arn,ActivityType,Title,Description,imageDescription,inBytes_,outBytes_,type_,unusual_,SecuritygroupId,SecurityGroupName_,instanceId,privateDnsName,privateIpAddress,subnetId,vpcId,actionType,port,protocol,RemoteIpAddressV4,RemotePort,eventFirstSeen,ServiceDetails,ResourceDetails\r\n\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4e8492b5-d586-444a-9f35-f078bd22a808')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4e8492b5-d586-444a-9f35-f078bd22a808')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS GuardDuty An EC2 instance is performing outbound port scans to a remote host.",
+                "description": "This finding informs you that the listed EC2 instance in your AWS environment is engaged in a possible port scan attack because it is trying to connect to multiple ports over a short period of time. The purpose of a port scan attack is to locate open ports to discover which services the machine is running and to identify its operating system.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSGuardDuty\r\n|where ActivityType contains \"Recon:EC2/Portscan\"\r\n| extend id_ = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).id)\r\n| extend arn = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).iamInstanceProfile)).arn)\r\n| extend imageDescription = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageDescription)\r\n| extend imageId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).imageId)\r\n| extend instanceId = tostring(parse_json(tostring(ResourceDetails.instanceDetails)).instanceId)\r\n| extend privateDnsName = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateDnsName)\r\n| extend privateIpAddress = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].privateIpAddress)\r\n| extend publicDnsName = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].publicDnsName)\r\n| extend subnetId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].subnetId)\r\n| extend vpcId = tostring(parse_json(tostring(parse_json(tostring(ResourceDetails.instanceDetails)).networkInterfaces))[0].vpcId)\r\n| extend actionType = tostring(parse_json(tostring(ServiceDetails.action)).actionType)\r\n| extend port = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).localPortDetails)).port)\r\n| extend protocol = tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).protocol)\r\n| extend RemoteIpAddressV4 = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remoteIpDetails)).ipAddressV4)\r\n| extend RemotePort = tostring(parse_json(tostring(parse_json(tostring(parse_json(tostring(ServiceDetails.action)).networkConnectionAction)).remotePortDetails)).port)\r\n| extend eventFirstSeen = tostring(ServiceDetails.eventFirstSeen)\r\n| extend eventLastSeen = tostring(ServiceDetails.eventLastSeen)\r\n|project TimeGenerated,AccountId,Region,Id,Arn,ActivityType,Title,Description,imageDescription,instanceId,privateDnsName,privateIpAddress,publicDnsName,subnetId,vpcId,actionType,port,protocol,RemoteIpAddressV4,RemotePort,eventFirstSeen,ServiceDetails,ResourceDetails",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/68819a8a-e52f-4127-b8a9-ddf6f0b0f192')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/68819a8a-e52f-4127-b8a9-ddf6f0b0f192')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Test- Monitor AWS Credential abuse or hijacking",
+                "description": "Looking for GetCallerIdentity Events where the UserID Type is AssumedRole \nAn attacker who has assumed the role of a legitimate account can call the GetCallerIdentity function to determine what account they are using.\nA legitimate user using legitimate credentials would not need to call GetCallerIdentity since they should already know what account they are using.\nMore Information: https://duo.com/decipher/trailblazer-hunts-compromised-credentials-in-aws\nAWS STS GetCallerIdentity API: https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html ",
+                "severity": "Low",
+                "enabled": true,
+                "query": "AWSCloudTrail\n| where EventName =~ \"GetCallerIdentity\" and UserIdentityType =~ \"AssumedRole\" \n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by SourceIpAddress, EventName, EventTypeName, UserIdentityType, UserIdentityAccountId, UserIdentityPrincipalid, \nUserAgent, UserIdentityUserName, SessionMfaAuthenticated,AWSRegion, EventSource, AdditionalEventData, ResponseElements\n| extend timestamp = StartTime, AccountCustomEntity = UserIdentityUserName, IPCustomEntity = SourceIpAddress\n| sort by EndTime desc nulls last",
+                "queryFrequency": "P1D",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Discovery"
+                ],
+                "techniques": [
+                    "T1087"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": "32555639-b639-4c2b-afda-c0ae0abefa55",
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "AccountCustomEntity"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPCustomEntity"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": "1.0.0"
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b36989d1-dd4b-4009-a7b0-8e324871bd42')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b36989d1-dd4b-4009-a7b0-8e324871bd42')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1206 - AWS - AWS Cloud: User Profile Updated_EAF",
+                "description": "User Profile Updated in AWS is a term that refers to the action of modifying the attributes or settings of a user account in AWS",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventSource contains \"iam.amazonaws.com\"\r\n| where EventName contains \"Update\"\r\n| where EventName has_any (\"UpdateUserSettings\",\"UpdateAccountPasswordPolicy\",\"UpdatePolicy\",\"UpdateAccountEmailAddress\",\"UpdateAccountName\")\r\n|project TimeGenerated,EventSource,EventName,UserIdentityType,UserIdentityArn,UserIdentityAccountId,SessionIssuerType,SessionCreationDate,AWSRegion,SourceIpAddress,UserAgent,RequestParameters,ClientProvidedHostHeader, UserIdentityPrincipalid",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/16240ab9-6960-4470-b36d-7bb229fc030f')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/16240ab9-6960-4470-b36d-7bb229fc030f')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA -1187 - AWS - AWS Cloud: Multiple Console Login Failures From Different Source Ips",
+                "description": "Multiple Console Login Failures from Different Source Ips",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"ConsoleLogin\"\r\n| extend Login_Status = tostring(parse_json(ResponseElements).ConsoleLogin)\r\n| where Login_Status in ('Failure','Failedauthentication')\r\n| summarize starttime =min(TimeGenerated), endTime = max(TimeGenerated), dcount(SourceIpAddress), List_of_sourceIPs = make_list(SourceIpAddress), make_set(ErrorMessage), make_list (UserIdentityPrincipalid),make_list(UserIdentityAccountId), count() by ClientProvidedHostHeader,AWSRegion,Login_Status,bin(TimeGenerated,15m)\r\n| where dcount_SourceIpAddress > 1",
+                "queryFrequency": "PT4H",
+                "queryPeriod": "PT4H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "list_UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "List_of_sourceIPs"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9ada035d-d44c-4c59-8f33-e49a04acb925')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9ada035d-d44c-4c59-8f33-e49a04acb925')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1182 - AWS - AWS Cloud: Group has been Created or Deleted",
+                "description": "Group has been Created or Deleted",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventSource contains \"iam.amazonaws.com\"\r\n| where EventName contains \"CreateGroup\" or EventName contains \"DeleteGroup\"\r\n|extend Created_by = tostring(parse_json(ResponseElements).group.meta.createdBy) \r\n| project TimeGenerated,EventSource,UserIdentityPrincipalid,SourceIpAddress,UserIdentityAccountId,SessionCreationDate,SessionIssuerType,SessionIssuerArn,SessionIssuerUserName,AWSRegion,Created_by,ResponseElements",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f0fad93a-646b-402a-abc8-f89c8e2a4fa1')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f0fad93a-646b-402a-abc8-f89c8e2a4fa1')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS - AWS Cloud: Password Policy Updated",
+                "description": "Password Policy Updated",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"UpdateAccountPasswordPolicy\"\r\n| summarize count() by EventName,UserIdentityType,UserIdentityPrincipalid,UserIdentityAccessKeyId,SessionIssuerPrincipalId,SessionIssuerArn,SourceIpAddress,UserAgent\r\n\r\n// as of now we have not obsrved any events for \"UpdateAccountPasswordPolicy\"",
+                "queryFrequency": "PT4H",
+                "queryPeriod": "PT4H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9377becf-a36b-49c4-bc67-a0197f2c1b59')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9377becf-a36b-49c4-bc67-a0197f2c1b59')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS_DeleteLogStream_EAF",
+                "description": "AWS DeleteLogStream is a command that deletes the specified log stream and permanently deletes all the archived log events..",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"DeleteLogStream\"\r\n|extend DeletedLog = tostring(parse_json(RequestParameters). logGroupName)\r\n|project TimeGenerated,EventSource,UserIdentityType,UserIdentityPrincipalid,UserIdentityArn,SessionCreationDate,AWSRegion,SourceIpAddress,UserAgent,DeletedLog",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "UserIdentityPrincipalid"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIpAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/aaffea7c-a139-4b02-b359-6a67e53e284a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/aaffea7c-a139-4b02-b359-6a67e53e284a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1178 - AWS - AWS Cloud: An EC2 Instance Has Been Created In A Non-Standard VPC or without VPC_EAF",
+                "description": "An EC2 instance is a virtual server that runs on the AWS cloud. A VPC is a virtual network that isolates your AWS resources from the public internet.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"RunInstances\"\r\n| where VpcEndpointId contains \"vpc-04d96377fffe4750c\" or VpcEndpointId contains \"vpc-011f613a87ef98155\" or VpcEndpointId contains \"vpc-0f472f6cab7f010e7\"\r\n|project TimeGenerated,EventName,UserIdentityPrincipalid,UserIdentityAccountId,SourceIpAddress,UserAgent,RequestParameters,ResponseElements,ClientProvidedHostHeader",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/526feef6-472e-4792-9f0d-a7e6a76deea2')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/526feef6-472e-4792-9f0d-a7e6a76deea2')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "NRT",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "AWS_DeleteTrail log_EAF",
+                "description": "AWS DeleteTrail is an API operation that deletes a trail in AWS CloudTrail",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n| where EventName contains \"DeleteTrail\"\r\n|extend Deletedtrail = tostring(parse_json(RequestParameters). name)\r\n|project TimeGenerated,EventSource,UserIdentityType,UserIdentityPrincipalid,UserIdentityArn,SessionCreationDate,AWSRegion,SourceIpAddress,UserAgent,Deletedtrail",
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/56994cdc-0b5c-4377-93b2-7425b222f250')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/56994cdc-0b5c-4377-93b2-7425b222f250')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-98 - AWS - Public RDS Instance restore detected",
+                "description": "Description: Public RDS instance restore is a process of creating a new DB instance from a DB snapshot that was taken from another DB instance.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n|where RequestParameters contains \"RestoreDBInstanceFromDBSnapshot\"\r\n|project TimeGenerated,EventSource,EventName,UserIdentityType,UserIdentityPrincipalid,UserIdentityArn,UserIdentityAccountId,SessionCreationDate,SessionIssuerUserName,SourceIpAddress,AWSRegion,UserAgent,RequestParameters",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact",
+                    "InhibitResponseFunction"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c6fdab67-8b21-4089-98b5-4ff2becd7abe')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c6fdab67-8b21-4089-98b5-4ff2becd7abe')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PR-82 - AWS - Full Admin policy created and then attached to Roles, Users or Groups",
+                "description": "A Full Admin policy is a type of IAM policy that grants full administrative permissions to the entities (roles, users, or groups) that are attached to it. A Full Admin policy allows the entities to perform any action on any resource in the AWS account. A Full Admin policy is not a recommended practice, as it violates the principle of least privilege and exposes the account to potential security risks1.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let EventNameList = dynamic([\"AttachUserPolicy\",\"AttachRolePolicy\",\"AttachGroupPolicy\"]);\r\n  let createPolicy = \"CreatePolicy\";\r\n  let timeframe = 1d;\r\n  let lookback = 14d;\r\n  // Creating Master table with all the events to use with materialize for better performance\r\n  let EventInfo = AWSCloudTrail\r\n  | where TimeGenerated >= ago(lookback)\r\n  | where EventName in (EventNameList) or EventName == createPolicy;\r\n  //Checking for Policy creation event with Full Admin Privileges since lookback period.\r\n  let FullAdminPolicyEvents =  materialize(  EventInfo\r\n  | where TimeGenerated >= ago(lookback)\r\n  | where EventName == createPolicy\r\n  | extend PolicyName = tostring(parse_json(RequestParameters).policyName)\r\n  | extend Statement = parse_json(tostring((parse_json(RequestParameters).policyDocument))).Statement\r\n  | mvexpand Statement\r\n  | extend Action = parse_json(Statement).Action , Effect = tostring(parse_json(Statement).Effect), Resource = tostring(parse_json(Statement).Resource)\r\n  | mvexpand Action\r\n  | extend Action = tostring(Action)\r\n  | where Effect =~ \"Allow\" and Action == \"*\" and Resource == \"*\"\r\n  | distinct TimeGenerated, EventName, PolicyName, SourceIpAddress, UserIdentityArn, UserIdentityUserName \r\n  | extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))\r\n  | project-rename StartTime = TimeGenerated  );\r\n  let PolicyAttach = materialize(  EventInfo\r\n  | where TimeGenerated >= ago(timeframe)\r\n  | where EventName in (EventNameList)\r\n  | extend PolicyName = tostring(split(tostring(parse_json(RequestParameters).policyArn),\"/\")[1])\r\n  | summarize AttachEventCount=count(), StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by EventSource, EventName,   UserIdentityType , UserIdentityArn, SourceIpAddress, UserIdentityUserName = iff(isnotempty(UserIdentityUserName),   UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1])), PolicyName\r\n  | extend AttachEvent = pack(\"StartTime\", StartTime, \"EndTime\", EndTime, \"EventName\", EventName, \"UserIdentityType\",   UserIdentityType, \"UserIdentityArn\", UserIdentityArn, \"SourceIpAddress\", SourceIpAddress, \"UserIdentityUserName\", UserIdentityUserName)\r\n  | project EventSource, PolicyName, AttachEvent, AttachEventCount\r\n  );\r\n  // Joining the list of PolicyNames and checking if it has been attached to any Roles/Users/Groups.\r\n  // These Roles/Users/Groups will be Privileged and can be used by adversaries as pivot point for privilege escalation via multiple ways.\r\n  FullAdminPolicyEvents\r\n  | join kind=leftouter\r\n  (\r\n      PolicyAttach\r\n  )\r\n  on PolicyName\r\n  | project-away PolicyName1\r\n  | extend timestamp = StartTime, IPCustomEntity = SourceIpAddress, AccountCustomEntity = UserIdentityUserName",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a90335ac-caa0-4db2-a178-86790eb6d1b2')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a90335ac-caa0-4db2-a178-86790eb6d1b2')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-1348 - AWS - EC2 Encryption Disabled",
+                "description": "AWS - EC2 Encryption Disabled",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n|where EventName contains \"DisableEncryptionByDefault\"\r\n|extend DisableEncryption = RequestParameters\r\n|project TimeGenerated,EventName,UserIdentityType,UserIdentityPrincipalid,SourceIpAddress,UserIdentityArn,SessionCreationDate,AWSRegion,DisableEncryption",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d1f42811-5546-4265-bd81-b585cf0f2233')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d1f42811-5546-4265-bd81-b585cf0f2233')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-1347 - AWS - CloudWatch Log Stream Deletion",
+                "description": "AWS - CloudWatch Log Stream Deletion",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n|where EventName contains\"DeleteLogStream\"\r\n|extend Deleted_log = tostring(parse_json(RequestParameters).logGroupName)\r\n|project TimeGenerated,EventName,EventTypeName,Deleted_log,UserIdentityType,UserIdentityPrincipalid,SourceIpAddress,UserAgent,UserIdentityAccountId,UserIdentityAccessKeyId,SessionCreationDate,SessionIssuerPrincipalId,SessionIssuerArn",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/594c5e11-61e5-4342-88d2-5a4d3101762a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/594c5e11-61e5-4342-88d2-5a4d3101762a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1341 - AWS - GuardDuty Detector Deletion",
+                "description": "AWS - GuardDuty Detector Deletion",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AWSCloudTrail\r\n  | where EventName contains \"DeleteDetector\"\r\n  | summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated) by EventName, EventTypeName, UserIdentityAccountId, UserIdentityPrincipalid, UserAgent,\r\n  UserIdentityUserName, SessionMfaAuthenticated, SourceIpAddress, AWSRegion, EventSource\r\n  | extend timestamp = StartTimeUtc, AccountCustomEntity = UserIdentityUserName, IPCustomEntity = SourceIpAddress",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}

@@ -1,0 +1,1985 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/739f6ac5-6edf-4123-85e0-659569a8df6a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/739f6ac5-6edf-4123-85e0-659569a8df6a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Linux - Failed logon attempts in authpriv",
+                "description": "Identifies failed logon attempts from unknown users in Syslog authpriv logs. The unknown user means the account that tried to log in \nisn't provisioned on the machine. A few hits could indicate someone attempting to access a machine they aren't authorized to access. \nIf there are many of hits, especially from outside your network, it could indicate a brute force attack. \nDefault threshold for logon attempts is 15.",
+                "severity": "Low",
+                "enabled": false,
+                "query": "let threshold = 15;\r\n// Below pulls messages from syslog-authpriv logs where there was an authentication failure with an unknown user.\r\n// IP address of system attempting logon is also extracted from the SyslogMessage field. Some of these messages\r\n// are aggregated.\r\nlet authfail = Syslog\r\n| where Facility =~ \"authpriv\"   // looks at authpriv messages\r\n| where SyslogMessage contains \"authentication failure\" and SyslogMessage contains \" uid=0\"\r\n| parse SyslogMessage with * \"rhost=\" ExternalIP\r\n| project TimeGenerated, Computer, ProcessName, HostIP, ExternalIP, ProcessID;  \r\n// Below pulls messages from syslog-authpriv logs that show each instance an unknown user tried to logon. \r\nlet userfail = Syslog \r\n| where Facility =~ \"authpriv\" \r\n| where SyslogMessage contains \"user unknown\"\r\n| project TimeGenerated, Computer, HostIP, ProcessID;\r\n// Join the two log messages above\r\nlet userauthfail = authfail | join (userfail) on Computer, HostIP, ProcessID\r\n| project TimeGenerated, Computer, HostIP, ExternalIP, ProcessID ;\r\n// Extract the EventTime of the first logon attempt\r\nlet firstfail = userauthfail\r\n| summarize arg_min(TimeGenerated, *) by Computer, ExternalIP\r\n| project Computer, ExternalIP, FirstLogonAttempt = TimeGenerated;\r\n// Extract the EventTime of the last logon attempt\r\nlet lastfail = userauthfail\r\n| summarize arg_max(TimeGenerated, *) by Computer, ExternalIP\r\n| project Computer, ExternalIP, LatestLogonAttempt = TimeGenerated;\r\n// Join first and last logon attempt data and calculate the time between them (AttemptPeriodLength).\r\nlet faildates = firstfail | join (lastfail) on Computer, ExternalIP\r\n| project ExternalIP, Computer, FirstLogonAttempt, LatestLogonAttempt, TimeBetweenLogonAttempts = LatestLogonAttempt - FirstLogonAttempt;\r\n// Count the number of failed logon attempts by External IP and internal machine\r\nlet totalfails = userauthfail\r\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated), TotalLogonAttempts = count() by ExternalIP, Computer, HostIP\r\n| project StartTimeUtc, EndTimeUtc, ExternalIP, Computer, HostIP, TotalLogonAttempts;\r\n// Combine total attempts with timing data from above\r\nlet finalfails = totalfails | join (faildates) on Computer, ExternalIP\r\n| project StartTimeUtc, EndTimeUtc, SourceAddress = ExternalIP, DestinationHost = Computer, DestinationIP = HostIP, TotalLogonAttempts, FirstLogonAttempt, LatestLogonAttempt, TimeBetweenLogonAttempts\r\n| order by DestinationHost asc nulls last;\r\nfinalfails \r\n| where TotalLogonAttempts >= threshold",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess",
+                    "Discovery"
+                ],
+                "techniques": [
+                    "T1212"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [
+                            "Host"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "DestinationHost"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e74f8953-6ff9-4f12-9f55-26716535de3f')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e74f8953-6ff9-4f12-9f55-26716535de3f')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1034 - Linux - Excessive Failed Logins for one user",
+                "description": "Excessive Failed Logins for one user",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\n| where SyslogMessage contains \"failed password\"\n    or SyslogMessage contains \"User space authentication failed\"\n    or SyslogMessage contains \"Root Login Failed\"\n    or SyslogMessage contains \"User failed to login to SSH\"\n    or SyslogMessage contains \"incorrect password\"\n| extend Invalid_User = extract(\"invalid user(?s)(.*)from\", 1, SyslogMessage)\n| extend Valid_User = extract(\"for(?s)(.*)from\", 1, SyslogMessage)\n| extend User = iff(isnotempty(Invalid_User), Invalid_User, Valid_User)\n| extend IPaddr = extract(\"(([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.(([0-9]{1,3})))\", 1, SyslogMessage)\n| project-away Invalid_User, Valid_User\n//|summarize Evntcount=count() by Computer,User,bin(TimeGenerated,10m)\n| summarize\n    FailureStartTime = min(TimeGenerated),\n    FailureEndTime = max(TimeGenerated),\n    Failure_hosts = make_set(HostName),\n    Failure_IP_list = make_set(IPaddr),\n    count()\n    by User, bin(TimeGenerated, 5m), IPaddr\n| where count_ >= 5\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPaddr"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "User"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1044')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1044')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1044 - Linux - Password Spray",
+                "description": "Linux - Password Spray",
+                "severity": "High",
+                "enabled": true,
+                "query": "Syslog \n| where SyslogMessage contains \"Failed password\"\n| extend user = extract(@\"\\s([^\\s]+)\\sfrom\", 1, SyslogMessage)\n| parse kind=relaxed SyslogMessage with * \" from \" ExternalIP \" port\" port \" ssh2\"\n| summarize users_list1= make_set(user), user_count1 = dcount(user), Eventcount1= count() by ExternalIP, bin(TimeGenerated, 10m)\n| join kind=fullouter (\nSyslog\n| where SyslogMessage contains \"Authentication Failure\"\n| extend ExternalIP = extract(@\"\\srhost=([^\\s]+)\", 1, SyslogMessage)\n| extend user = extract(@\"\\suser=([^\\s]+)\", 1, SyslogMessage)\n| summarize users_list2= make_set(user), user_count2 = dcount(user), Eventcount2= count() by ExternalIP, bin(TimeGenerated, 10m)\n) on ExternalIP, TimeGenerated\n| extend Eventcount1 = iff(isnull( Eventcount1), 0, Eventcount1)\n| extend Eventcount2 = iff(isnull( Eventcount2), 0, Eventcount2)\n| extend user_count1 = iff(isnull( user_count1), 0, user_count1)\n| extend user_count2 = iff(isnull( user_count2), 0, user_count2)\n| extend TotalEventCount = Eventcount1 + Eventcount2\n| extend TotalUserCount = user_count1 + user_count2\n| where TotalEventCount > 30 or TotalUserCount > 10\n| where ExternalIP != \"\"",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "ExternalIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e433f0ca-177c-4fd6-8f76-9e9bba37b1ec')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e433f0ca-177c-4fd6-8f76-9e9bba37b1ec')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1131 - Linux - Multiple Login Failure on Linux Device- Unknown User Name or Bad Password",
+                "description": "Multiple Login Failure on Linux Device due to Unknown User Name or Bad Password",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n | where ProcessName =~ \"sshd\"\r\n  | where SyslogMessage has \"authentication failure\"\r\n  | where SyslogMessage has \"user unknown\"\r\n  | parse SyslogMessage with * \"rhost=\" RemoteIP\r\n  | project TimeGenerated, Computer, ProcessName, HostIP, RemoteIP, ProcessID\r\n | summarize Start_time = min(TimeGenerated), end_time = max(TimeGenerated), TotalLogonAttempts = count() by Computer, HostIP, RemoteIP,bin(TimeGenerated,5m)\r\n | where TotalLogonAttempts >=5",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "RemoteIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": [
+                    {
+                        "columnName": "TotalLogonAttempts"
+                    }
+                ],
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/37b218e9-a47b-4f60-8acd-ce2f571e1f06')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/37b218e9-a47b-4f60-8acd-ce2f571e1f06')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-1156 - Linux - Unix Privileged Login Attempt Failed",
+                "description": "Unix Privileged Login Attempt Failed",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where ProcessName =~ \"sshd\"\r\n| where SyslogMessage has \"authentication failure\"\r\n| parse SyslogMessage with * \"rhost=\" RemoteIP \"user=\" Username\r\n| where Username == \"root\"\r\n| summarize\r\n    Start_time= min(TimeGenerated),\r\n    End_time = max(TimeGenerated),\r\n    eventcount= count()\r\n    by Username, bin(TimeGenerated, 10m)\r\n| where eventcount > 10",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Username"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d70c9c8c-223e-4d8c-8d21-565dc69682bc')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d70c9c8c-223e-4d8c-8d21-565dc69682bc')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-424 - Linux - Excessive Failed Logins from one source",
+                "description": "Excessive Failed Logins from one source",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where Facility contains  \"authpriv\"\r\n|where SyslogMessage contains \"Failed password\"\r\n| parse SyslogMessage with * \"for \" username \" from \" IPAddress \" port \" port \"ssh2\"\r\n|summarize starttime=min(TimeGenerated),endtime=max(TimeGenerated),dcount(username), userlist=make_set(username),Evntcount=count() by IPAddress,bin(TimeGenerated,5m)\r\n|where Evntcount>=10",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [
+                    "T1110"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {
+                    "user": "userlist"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "IPAddress"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b6bc852a-fd06-4c0b-9f6d-86f8291e45ba')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b6bc852a-fd06-4c0b-9f6d-86f8291e45ba')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CA-436 - Linux - Multiple Authentication Failure by Unknown User Names",
+                "description": "Linux - Multiple Authentication Failure by Unknown User Names",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n  | where Facility =~ \"authpriv\"\r\n  | where SyslogMessage has \"authentication failure\" and SyslogMessage has \"uid=0\"\r\n  | parse SyslogMessage with * \"rhost=\" RemoteIP\r\n  | project TimeGenerated, Computer, ProcessName, HostIP, RemoteIP, ProcessID\r\n  | join kind=innerunique (\r\n      // Below pulls messages from syslog-authpriv logs that show each instance an unknown user tried to logon. \r\n      Syslog \r\n      | where Facility =~ \"authpriv\"\r\n      | where SyslogMessage has\"user unknown\"\r\n      | project Computer, HostIP, ProcessID\r\n      ) on Computer, HostIP, ProcessID\r\n  | summarize start_time = min(TimeGenerated), end_time = max(TimeGenerated), evtcount = count() by Computer, HostIP, RemoteIP,bin(TimeGenerated,10m)\r\n  | where evtcount>10",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CredentialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/49af647a-3a42-44b1-9965-2e7ebdf89bb3')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/49af647a-3a42-44b1-9965-2e7ebdf89bb3')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CC.LM-1293 - Linux - Remote File Copy",
+                "description": "Linux - Remote File Copy",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"scp\" or SyslogMessage contains \"sftp\" or SyslogMessage contains \"rsync\"\r\n| extend SourceFilePath = extract(@\"from\\s+(\\/[^ ]+)\", 1, SyslogMessage),\r\n         DestinationFilePath = extract(@\"to\\s+(\\/[^ ]+)\", 1, SyslogMessage)\r\n| where isnotempty(SourceFilePath) and isnotempty(DestinationFilePath)\r\n| project TimeGenerated, HostName, SourceFilePath, DestinationFilePath, SyslogMessage",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "CommandAndControl",
+                    "LateralMovement"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/417')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/417')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-CO-417 - Linux - Connection of any usb device to the critical server",
+                "description": "Linux - Connection of any usb device to the critical server",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let criticalProcessID=dynamic([\"1\", \"2\", \"3\"]);\nSyslog\n| where SyslogMessage contains \"Device Detected\"\n| where ProcessID in (criticalProcessID)",
+                "queryFrequency": "PT4H",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Collection"
+                ],
+                "techniques": [
+                    "T1025"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a6aec1cd-4132-4d0f-acab-b8b4cdd9770f')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a6aec1cd-4132-4d0f-acab-b8b4cdd9770f')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1038 - Linux - Log Deletion Attempt",
+                "description": "Linux - Log Deletion Attempt",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where (ProcessName endswith '/rm' or ProcessName endswith '/shred') and  SyslogMessage contains'/var/log' or  SyslogMessage  contains '/var/spool/mail'\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a8be1eda-8184-4dee-9cdc-d1efe50003c5')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a8be1eda-8184-4dee-9cdc-d1efe50003c5')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1294 - Linux - File or Folder Permissions Change",
+                "description": "Linux - File or Folder Permissions Change",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where Type =~ \"EXECVE\"\r\n| where SyslogMessage contains \"chmod\" or SyslogMessage contains \"chown\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/50e0c6bd-0ec0-4521-b15b-e1e1bbc51b27')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/50e0c6bd-0ec0-4521-b15b-e1e1bbc51b27')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1295 - Linux - Disabling Security Tools",
+                "description": "Linux - Disabling Security Tools",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"service iptables stop\"\r\n    or SyslogMessage contains \"chkconfig off iptables\"\r\n    or SyslogMessage contains \"service ip6tables stop\"\r\n    or SyslogMessage contains \"chkconfig off ip6tables\"\r\n    or SyslogMessage contains \"service cbdaemon stop\"\r\n    or SyslogMessage contains \"chkconfig off cbdaemon\"\r\n    or SyslogMessage contains \"systemctl stop cbdaemon\"\r\n    or SyslogMessage contains \"systemctl disable cbdaemon\"\r\n    or SyslogMessage contains \"setenforce 0\"\r\n    or SyslogMessage contains \"systemctl stop falcon-sensor.service\"\r\n    or SyslogMessage contains \"systemctl disable falcon-sensor.service\"\r\n    | project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/59a29ea4-81e6-4971-ad9e-af2852066047')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/59a29ea4-81e6-4971-ad9e-af2852066047')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1381 - Linux - File Permission Modification in Writable Directory",
+                "description": "Identifies file permission modifications in common writable directories by a non-root user. Adversaries often drop filesor payloads into a writable directory and change permissions prior to execution.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n | where SyslogMessage  has_any (\"chmod\",\"chown\",\"chattr\",\"chgrp\")\r\n|where SyslogMessage has_any (\"/tmp\",\"/var/tmp\",\"/dev/shm\")\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/354ebadc-b69e-4314-b166-f0c237a12847')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/354ebadc-b69e-4314-b166-f0c237a12847')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-1482 - Linux - Short Lived User Account",
+                "description": "Linux - Short Lived User Account",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let timeframe = 60m;\r\nlet spanoftime = 30m;\r\nlet threshold = 0;\r\nSyslog \r\n| where TimeGenerated > ago(timeframe) \r\n// A user account was created\r\n| where SyslogMessage has \"useradd\"\r\n| extend Activity = \"useradd\"\r\n| extend TargetUserName=extract('new user: name=(.+?), ', 1, SyslogMessage)\r\n| project creationTime = TimeGenerated, Activity, Computer, TargetUserName\r\n| join kind= inner (\r\n    Syslog\r\n    | where TimeGenerated > ago(timeframe) \r\n    // A user account was deleted \r\n    | where SyslogMessage has \"userdel\"\r\n    | extend Activity = \"userdel\"\r\n    | extend TargetUserName=extract('new user: name=(.+?), ', 1, SyslogMessage)\r\n    | project deletionTime = TimeGenerated, Activity, Computer, TargetUserName\r\n    )\r\n    on Computer, TargetUserName\r\n| where deletionTime - creationTime < spanoftime\r\n| extend TimeDelta = deletionTime - creationTime\r\n| where tolong(TimeDelta) >= threshold\r\n| project\r\n    TimeDelta,\r\n    creationTime,\r\n    Computer,\r\n    TargetUserName, \r\n    deletionTime\r\n| extend\r\n    timestamp = creationTime,\r\n    AccountCustomEntity = TargetUserName,\r\n    HostCustomEntity = Computer",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [
+                    "T1078"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "TargetUserName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/416')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/416')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE-416 - Linux - Clear command history detected",
+                "description": "Linux - Clear command history detected",
+                "severity": "High",
+                "enabled": true,
+                "query": "Syslog\n| where SyslogMessage contains \"history -c\" or SyslogMessage contains \"history -w\" or (SyslogMessage contains \"bash_history\" and (SyslogMessage contains \"rm\" or SyslogMessage contains \"echo \"\"\" or SyslogMessage contains @\"cat /dev/null\" or SyslogMessage contains \"truncate -s0\" or SyslogMessage contains \"shred\"))",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3f63da9a-b6cd-4a91-9d6e-5294eb804b39')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3f63da9a-b6cd-4a91-9d6e-5294eb804b39')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE.IA.PE.PR-449 - Linux - SU to Root",
+                "description": "SU to Root access on linux",
+                "severity": "Low",
+                "enabled": true,
+                "query": "Syslog\r\n|where SyslogMessage contains \"Privilege Escalation Succeeded\"\r\n|where HostName == \"root\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess",
+                    "DefenseEvasion",
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/46d50e84-50ae-43ae-8c7e-03b635f9f170')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/46d50e84-50ae-43ae-8c7e-03b635f9f170')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE.PE-1383 - Linux - Creation of Hidden Files and Directories",
+                "description": "Users can mark specific files as hidden simply by putting a . as the first character in the file or folder name.Adversaries can use this to their advantage to hide files and folders on the system for persistence and defense evasion.This rule looks for hid",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where * =~ @'EXECVE'\r\n| where SyslogMessage in~ (@'mkdir', @'touch', @'vim', @'nano', @'vi') and (SyslogMessage contains @'/.' or SyslogMessage startswith @'.' or SyslogMessage contains @'/.' or SyslogMessage startswith @'.')\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "DefenseEvasion",
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1878')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1878')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-DE.PR-1878-Linux - Multiple Login Failure followed by success from the same username",
+                "description": "Successful login from the same user name after multiple failed logins",
+                "severity": "High",
+                "enabled": true,
+                "query": "//Threshold for failure count set to 3; which can be changed. \nSyslog\n| where SyslogMessage startswith \"Failed Password\"\n| extend Invalid_User = extract(\"invalid user(?s)(.*)from\", 1, SyslogMessage)\n| extend Valid_User = extract(\"for(?s)(.*)from\", 1, SyslogMessage)\n| extend User = iff(isnotempty(Invalid_User), Invalid_User, Valid_User)\n| where User !contains \"root\"\n| extend IPaddr = extract(\"(([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.(([0-9]{1,3})))\", 1, SyslogMessage)\n| project-away Invalid_User, Valid_User\n| summarize\n    FailureStartTime = min(TimeGenerated),\n    FailureEndTime = max(TimeGenerated),\n    Failure_hosts = make_set(HostName),\n    Failure_IP_list = make_set(IPaddr),\n    count()\n    by User, bin(TimeGenerated, 5m)\n| where count_ >= 3\n| join kind=inner (Syslog\n    | where SyslogMessage startswith \"Accepted Password\"\n    | extend User = extract(\"for(?s)(.*)from\", 1, SyslogMessage)\n    | extend Success_IPaddr = extract(\"(([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.([0-9]{1,3})\\\\.(([0-9]{1,3})))\", 1, SyslogMessage)\n    | extend Success_time = TimeGenerated\n    )\n    on User\n| where Success_time - FailureEndTime between (5m .. 10m)\n| project\n    FailureStartTime,\n    FailureEndTime,\n    Failure_hosts,\n    User,\n    Success_time,\n    Failure_IP_list,\n    LoginSuccessComputer = HostName,\n    Success_IPaddr",
+                "queryFrequency": "PT12H",
+                "queryPeriod": "PT12H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [
+                    "T1548"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "LoginSuccessComputer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Failure_hosts"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "User"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f06d01d4-754c-4928-8028-967decdaa607')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f06d01d4-754c-4928-8028-967decdaa607')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-1387- Linux - Interactive Terminal Spawned via Perl",
+                "description": "Linux - Interactive Terminal Spawned via Perl",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where * contains \"exec /bin/sh;\"\r\n    or * contains \"exec /bin/dash;\"\r\n    or * contains \"exec /bin/bash;\"\r\n| where ProcessName contains \"perl\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2f703779-12d7-4428-ba92-9d615a1fe4a5')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2f703779-12d7-4428-ba92-9d615a1fe4a5')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-451 - Linux - Suspicious Commands detected",
+                "description": "Linux - Suspicious Commands detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let suspicious_commands = dynamic([\"nc\", \"netcat\", \"nmap\", \"wget\", \"curl\", \"base64\", \"openssl\", \"socat\", \"perl\", \"python\", \"ruby\", \"sh\", \"bash\", \"zsh\", \"csh\", \"ksh\", \"tcsh\", \"scp\", \"ssh\", \"ftp\", \"tftp\", \"dd\", \"cat\", \"chmod\", \"chown\", \"echo\", \"tar\", \"gzip\", \"gunzip\", \"bzip2\", \"kill\", \"pkill\", \"killall\", \"ps\", \"top\", \"htop\", \"strace\", \"ltrace\", \"lsof\", \"tcpdump\", \"ping\", \"traceroute\", \"whoami\", \"uname\", \"hostname\", \"id\", \"su\", \"sudo\", \"find\", \"grep\", \"sed\", \"awk\", \"cut\", \"xargs\", \"du\", \"df\", \"ls\", \"mv\", \"cp\", \"rm\", \"dd\", \"netstat\", \"ifconfig\", \"ip\", \"arp\", \"route\", \"ss\"]);\r\nSyslog\r\n| extend Command = extract(\"([a-zA-Z0-9_/]+)([\\\\s\\\\S]*)\", 1, SyslogMessage)\r\n| extend User = extract(\"user=([a-zA-Z0-9_]+)\", 1, SyslogMessage)\r\n| extend PID = extract(\"pid=([0-9]+)\", 1, SyslogMessage)\r\n| extend PPID = extract(\"ppid=([0-9]+)\", 1, SyslogMessage)\r\n| where Command in (suspicious_commands)\r\n| where ProcessName !in~ (\"microsoft-mdatp-installer\",\"microsoft-mdatp-uninstaller\")\r\n| project TimeGenerated, HostName, Command, PID, PPID, SyslogMessage, Facility, User, ProcessName\r\n| sort by TimeGenerated desc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "User"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/454')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/454')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX-454 - Linux - Suspicious Reverse Shell Command Line detected",
+                "description": "Linux - Suspicious Reverse Shell Command Line detected",
+                "severity": "High",
+                "enabled": true,
+                "query": " Syslog\n| where (SyslogMessage contains @'BEGIN {s = \"/inet/tcp/0/' or SyslogMessage contains @'bash -i >& /dev/tcp/' or SyslogMessage contains @'bash -i >& /dev/udp/' or SyslogMessage contains @'sh -i >$ /dev/udp/' or SyslogMessage contains @'sh -i >$ /dev/tcp/' or SyslogMessage contains @'&& while read line 0<&5; do' or SyslogMessage contains @'/bin/bash -c exec 5<>/dev/tcp/' or SyslogMessage contains @'/bin/bash -c exec 5<>/dev/udp/' or SyslogMessage contains @'nc -e /bin/sh ' or SyslogMessage contains @'/bin/sh | nc' or SyslogMessage contains @'rm -f backpipe; mknod /tmp/backpipe p && nc ' or SyslogMessage contains @';socket(S,PF_INET,SOCK_STREAM,getprotobyname(\"tcp\"));if(connect(S,sockaddr_in($p,inet_aton($i))))' or SyslogMessage contains @';STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;' or SyslogMessage contains @'/bin/sh -i <&3 >&3 2>&3' or SyslogMessage contains @'uname -a; w; id; /bin/bash -i' or SyslogMessage contains @'$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2); $stream.Write($sendbyte,0,$sendbyte.Length); $stream.Flush()};' or SyslogMessage contains @\";os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);os.putenv('HISTFILE','/dev/null');\" or SyslogMessage contains @'.to_i;exec sprintf(\"/bin/sh -i <&%d >&%d 2>&%d\",f,f,f)' or SyslogMessage contains @';while(cmd=c.gets);IO.popen(cmd,\"r\"){|io|c.print' or SyslogMessage contains @\"socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:\" or SyslogMessage contains @'rm -f /tmp/p; mknod /tmp/p p &&' or SyslogMessage contains @' | /bin/bash | telnet ' or SyslogMessage contains @',echo=0,raw tcp-listen:' or SyslogMessage contains @'nc -lvvp ' or SyslogMessage contains @'xterm -display 1')",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c6a14c91-6eb5-4b4f-bf7d-2174cc7f9ee6')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c6a14c91-6eb5-4b4f-bf7d-2174cc7f9ee6')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-EX.PE.PR-1535 - Linux - Rarely observed Cron Job seen in linux",
+                "description": "Rule triggers whe Rarely observed Cron Job seen in linux",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n|where SyslogMessage contains \"/var/log/cron\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "Persistence",
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDynamicProperties": []
+                },
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/377a3c0e-ac1c-4e6c-8b26-614a6ed9599e')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/377a3c0e-ac1c-4e6c-8b26-614a6ed9599e')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IA-1292 - Linux - Buffer Overflow Attempts",
+                "description": "Buffer Overflow Attempts",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog \r\n| where (* contains 'attempt to execute code on stack by' or * contains 'FTP LOGIN FROM . 0bin0sh' or * contains 'rpc.statd[/d+]:gethost by name error for' or\r\n * contains 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [
+                    "T0819"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a122d7ef-db15-44ec-bc40-b0ec726bb5db')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a122d7ef-db15-44ec-bc40-b0ec726bb5db')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-409 - Linux - Account Deleted",
+                "description": "Rule triggers when any linux Account Deleted",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"userdel\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [
+                    "T1531"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": [
+                    {
+                        "columnName": "SyslogMessage"
+                    }
+                ],
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2f74a382-576c-422e-8c1e-2b026b7448f4')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2f74a382-576c-422e-8c1e-2b026b7448f4')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-IM-410 - Linux - Account Modified",
+                "description": "Linux - Account Modified",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"usermod\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Impact"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/90590a66-8665-4e73-b137-9e162cbb2128')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/90590a66-8665-4e73-b137-9e162cbb2128')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-1532 - Linux - Direct SSH Login from root account",
+                "description": "Direct SSH Login from root account",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage== \"Accepted publickey for root\"\r\n| project EventTime, ProcessID, HostIP, SourceSystem, SyslogMessage, Computer",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1098"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Process",
+                        "fieldMappings": [
+                            {
+                                "identifier": "ProcessId",
+                                "columnName": "ProcessID"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/156e7d6f-f4c0-4a35-a327-c3fd9cfaeded')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/156e7d6f-f4c0-4a35-a327-c3fd9cfaeded')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-408 - Linux - Account Created",
+                "description": "Linux - Account Created",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"useradd\" or SyslogMessage contains \"adduser\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/01a4f253-1e01-4c49-82c1-385477b0d498')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/01a4f253-1e01-4c49-82c1-385477b0d498')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-414 - Linux - Change in user environment/Bash Profile detected",
+                "description": "Change in user environment/Bash Profile detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"auditd\"\r\n| where SyslogMessage contains \"/ home / * / .bashrc\" or SyslogMessage contains \"/home/*/.bash_profile\" or SyslogMessage contains \"/home/*/.profile\" or SyslogMessage contains \"/etc/profile\" or SyslogMessage contains \"/etc/shells\" or SyslogMessage contains \"/etc/bashrc\" or SyslogMessage contains \"/etc/csh.cshrc\" or SyslogMessage contains \"/etc/csh.login\"",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "Computer"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9be0a28c-a207-4426-a683-208e80a4e098')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9be0a28c-a207-4426-a683-208e80a4e098')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-418 - Linux - Creation of crontab",
+                "description": "Creation of crontab",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where Facility == \"cron\" or ProcessName in (\"crontab\", \"cron\", \"atd\")\r\n| where SyslogMessage contains \"new\" or SyslogMessage contains \"edited\" or SyslogMessage contains \"CMD\"\r\n| project TimeGenerated, Computer, ProcessName, SyslogMessage\r\n| order by TimeGenerated desc\r\n| where SyslogMessage !contains \"hourly\" and SyslogMessage !contains \"opsview\"\r\n| where SyslogMessage !contains \"root\"\r\n    and SyslogMessage !contains \"fail\"\r\n    and SyslogMessage !contains \"acc\"\r\n    and SyslogMessage !contains \"sysman\"\r\n    and SyslogMessage !contains \"oracle\"\r\n    and SyslogMessage !contains \"cghwijna\"\r\n    and SyslogMessage !contains \"redwood\"\r\n    and SyslogMessage !contains \"cron.daily\" and SyslogMessage !contains \"opc\"\r\n| where SyslogMessage !contains \"unable to look up public/pickup: No such file or directory\" //not related to creation of cronjob\r\n| where SyslogMessage !contains \"(opsview)\" //system user\r\n| where SyslogMessage !contains \"(omsagent) CMD (/opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1)\"",
+                "queryFrequency": "PT6H",
+                "queryPeriod": "PT6H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1a2ac401-a31f-47b8-a501-8409f82042f8')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1a2ac401-a31f-47b8-a501-8409f82042f8')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-444 - Linux - Possible command execution detected by web application/web shell",
+                "description": "Linux - Possible command execution detected by web application/web shell",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"SYSCALL\"\r\n    and SyslogMessage contains \"execve\"\r\n    and SyslogMessage contains \"detect_execve_www\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Execution",
+                    "Persistence"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/455')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/455')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE-455 - Linux - Suspicious Shell commands detected",
+                "description": "Linux - Suspicious Shell commands detected",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\n| where (SyslogMessage contains \"wget * - http* | perl\" or SyslogMessage contains \"wget * - http* | sh\" or SyslogMessage contains \"wget * - http* | bash\" or SyslogMessage contains \"python -m SimpleHTTPServer\" or SyslogMessage contains \"-m http.server\" or SyslogMessage contains \"import pty; pty.spawn*\" or SyslogMessage contains \"socat exec:*\" or SyslogMessage contains \"socat -O /tmp/*\" or SyslogMessage contains \"socat tcp-connect*\" or SyslogMessage contains \"*echo binary >>*\" or SyslogMessage contains \"*wget *; chmod +x*\" or SyslogMessage contains \"*wget *; chmod 777 *\" or SyslogMessage contains \"*cd /tmp || cd /var/run || cd /mnt*\" or SyslogMessage contains \"*stop;service iptables stop;\" or SyslogMessage contains \"stop;SuSEfirewall2 stop;\" or SyslogMessage contains \"chmod 777 2020\" or SyslogMessage contains \">>/etc/rc.local\" or SyslogMessage contains \"base64 -d /tmp/\" or SyslogMessage contains \" | base64 -d \" or SyslogMessage contains \"/chmod u+s \" or SyslogMessage contains \"chmod +s /tmp/\" or SyslogMessage contains \"chmod u+s /tmp/\" or SyslogMessage contains \" /tmp/haxhax\" or SyslogMessage contains \" /tmp/ns_sploit\" or SyslogMessage contains \"nc -l -p \" or SyslogMessage contains \"cp /bin/ksh \" or SyslogMessage contains \"cp /bin/sh \" or SyslogMessage contains \" /tmp/*.b64 \" or SyslogMessage contains \"/tmp/ysocereal.jar\" or SyslogMessage contains \"/tmp/x \" or SyslogMessage contains \"; chmod +x /tmp/\" or SyslogMessage contains \";chmod +x /tmp/\")",
+                "queryFrequency": "PT4H",
+                "queryPeriod": "P1D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence"
+                ],
+                "techniques": [
+                    "T1624"
+                ],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "P5D",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/666b9d31-dbfc-4794-86af-cca0c95e735a')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/666b9d31-dbfc-4794-86af-cca0c95e735a')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "UC-PE.PR-427 - Linux - Group Modified",
+                "description": "Linux - Group Modified",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "Syslog\r\n| where SyslogMessage contains \"groupmod\" or SyslogMessage contains \"groupadd\" or SyslogMessage contains \"groupdel\"\r\n| project TimeGenerated, HostName, HostIP, SyslogMessage, ProcessName\r\n| sort by TimeGenerated asc",
+                "queryFrequency": "PT10M",
+                "queryPeriod": "PT10M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "Persistence",
+                    "PrivilegeEscalation"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "HostName"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "HostIP"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
