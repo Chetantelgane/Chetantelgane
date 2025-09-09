@@ -1,0 +1,39 @@
+restart rsyslog.service   -- Restart syslog service
+traceroute dest.IP    -- check connectivitiy with Dest IP
+Ping Dest.IP           --- Checking Ping Connectivity
+sudo su -
+df -h /var
+grep -i Dest.IP messages  -- to check detailed logs of the Dest.IP
+
+
+If syslog is not receiving logs, do check above steps and below one.
+
+Check firewall configuration and policies defined.
+Check Network connectivity setting from Azure portal   -- Azure >> Search for server in Global search  >> goto Netwrok settings, here check inbound and outbound configurations.
+
+
+Login to syslog
+First check
+Syslog via AMA status  -- if any issue restart AMA agent
+
+systemctl restart azuremonitoragent
+systemctl restart rsyslog
+systemctl status azuremonitoragent
+systemctl status rsyslog
+systemctl status rsyslog.service
+
+
+Logs not flowing to CEF
+To check firewall log at syslog
+tail -f /var/log/essages | grep "mmpam-001.ee.intern"  --  here we can see when last log came at syslog for this firewall.
+If we see here log coming but not to sentinel., then just clear syslog space and restart AMA agent.
+If we don’t see logs coming to syslog, then raise INC with FW team.
+
+To clear syslog space.
+1. Sudo su
+2. Cd /var/log
+3. Ls -lrth
+4. Copy the file with high utilized storage
+5. sudo cat  /dev/null > messages
+
+

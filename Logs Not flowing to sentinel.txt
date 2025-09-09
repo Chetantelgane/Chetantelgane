@@ -1,0 +1,19 @@
+Login to one VM do test connectivity
+
+check NCG rules
+
+port 443 enabled it or not outbound port.
+
+On syslog server  >> Run TCP dump >> if logs capturing here, then DCR issue., try to reupdate DCR rule.
+
+if Logs not capturing in TCP dump >>  might be issue with the source who is sending logs , check with infra team.
+
+· The syslog server should be configured to listen on UDP or TCP (based on your preference) and on a port which is configured on all network devices to send logs to (default UDP 514).
+· Verify that firewall rules on Matalan network allow for outbound traffic from the syslog server to Microsoft Sentinel on the designated syslog port.
+· Check the accessibility of the Microsoft Sentinel workspace from the syslog server to ensure that there are no connectivity issues 
+
+tcpdump -i any port 28330 -A -vv  -- run this to check AMA receiving logs or not
+tcpdump -i any port 514 -A -vv | grep "172.23.159.6"  to check network packets for specific server
+tail -f syslog | grep 'device IP'   -- to check sys logs or Log file (/var/log/syslog)
+ls /var/log/messages*  -- run this to check logs rotating or not
+tcpdump -i any port 514 -A -vv  -- run this to check syslog receiving data or not

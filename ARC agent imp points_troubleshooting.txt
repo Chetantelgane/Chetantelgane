@@ -1,0 +1,56 @@
+
+azcmagent show
+
+azcmagent check
+
+If HIMDS service issue., restart the service
+Restart-Service himds, extensionservice, gcarcservice
+
+To disconnect the arc agent :  
+azcmagent disconnect --force-local-only
+
+
+To remove the AMA Agent via cloudshell from azure portal
+
+Remove-AzConnectedMachineExtension -MachineName <arc-server-name> -ResourceGroupName <resource-group-name> -Name AzureMonitorWindowsAgent
+ 
+
+Onboarding via API ( Azure Function)
+
+get API Creds from Okta >> Under data connectors select Okta (Using AZFn DC) >> copy work ID >> Click on Deploy to Azure >> Enter all details like resource ID, workspace >> click on create.
+
+==============================================================================
+Custom Threat intel can be integrated using Watchlist
+
+Integration with third-party SIEM solutions and external data sources -- use of custom connectors, APIs, and Logic Apps
+==============================================================================
+
+XDR integration to Sentinel
+
+Enable XDR DC  >> by this all alerts and incidents will start flowing if we have valid license. Plan 2 and E5
+
+==============================================================================
+Onboard FortiGate FW : 
+
+Data connectors Install DC >> to get into CEF, enable CEF DC >> Get Syslog server to get these logs.
+
+Now from FortiGate end, configure the facility and severity where logs to send.,
+
+Under CEF DC >> Create a DCR and select the Syslog VM. >> Select the facility where logs are getting forwarded.
+
+Finally Run this cmd over Syslog server to get into CEF :  sudo wget -O Forwarder_AMA_installer.py https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/DataConnectors/Syslog/Forwarder_AMA_installer.py&&sudo python Forwarder_AMA_installer.py
+
+==============================================================================
+
+Integration via Azure Functions : Low cost, suitable for High Data ingestion
+Integration via logic apps :  High Cost, suitable for Low data ingestion.
+
+==============================================================================
+Export Old SIEM logs
+
+Using API... From that SIEM > export monthly logs to Storage account as blobs...
+And then we can query those blobs using Azure Data Explorer by linking the storage account.
+
+=============================================================================
+
+Onprem servers to Cloud -- without Arc server, how to onboard
